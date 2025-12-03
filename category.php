@@ -1,24 +1,7 @@
 <?php get_header(); ?>
 
-<div class="container">
+<div class="container container-menu">
     <div class="content-area category-page">
-        <header class="category-header">
-            <h1 class="category-title"><?php single_cat_title(); ?></h1>
-            <?php if (category_description()) : ?>
-                <div class="category-description">
-                    <?php echo category_description(); ?>
-                </div>
-            <?php endif; ?>
-            <div class="category-meta">
-                <span class="post-count">
-                    <?php 
-                    global $wp_query;
-                    echo number_format($wp_query->found_posts) . ' ' . _n('article', 'articles', $wp_query->found_posts, 'ezoix'); 
-                    ?>
-                </span>
-            </div>
-        </header>
-
         <main class="main-content">
             <?php if (have_posts()) : ?>
                 <div class="post-grid">

@@ -6,7 +6,6 @@
  */
 
 if (! defined('ABSPATH')) {
-    exit; // Exit if accessed directly
 }
 
 /**
@@ -14,13 +13,10 @@ if (! defined('ABSPATH')) {
  */
 function ezoix_theme_setup()
 {
-    // Enable title tag support
     add_theme_support('title-tag');
 
-    // Enable post thumbnails
     add_theme_support('post-thumbnails');
 
-    // Enable custom logo
     add_theme_support('custom-logo', array(
         'height'      => 60,
         'width'       => 200,
@@ -28,7 +24,6 @@ function ezoix_theme_setup()
         'flex-width'  => true,
     ));
 
-    // Enable HTML5 support
     add_theme_support('html5', array(
         'search-form',
         'comment-form',
@@ -37,10 +32,8 @@ function ezoix_theme_setup()
         'caption',
     ));
 
-    // Enable custom background
     add_theme_support('custom-background');
 
-    // Enable post formats
     add_theme_support('post-formats', array(
         'aside',
         'gallery',
@@ -53,23 +46,19 @@ function ezoix_theme_setup()
         'chat'
     ));
 
-    // Register navigation menus
     register_nav_menus(array(
         'primary' => __('Primary Menu', 'ezoix'),
         'footer'  => __('Footer Menu', 'ezoix'),
     ));
 
-    // Add optimized image sizes
     add_image_size('mobile-thumbnail', 400, 200, true);
     add_image_size('tablet-thumbnail', 600, 300, true);
     add_image_size('desktop-thumbnail', 800, 400, true);
     add_image_size('featured-image', 1200, 600, true);
     add_image_size('hero-image', 1920, 800, true);
 
-    // Load theme text domain
     load_theme_textdomain('ezoix', get_template_directory() . '/languages');
 
-    // Register Mobile Device CPT early
     ezoix_register_mobile_device_cpt();
     ezoix_register_mobile_taxonomies();
 }
@@ -80,27 +69,21 @@ add_action('after_setup_theme', 'ezoix_theme_setup');
  */
 function ezoix_theme_scripts()
 {
-    // Main stylesheet
     wp_enqueue_style('ezoix-style', get_stylesheet_uri(), array(), wp_get_theme()->get('Version'));
 
-    // Google Fonts - Inter with weights 300-800
     wp_enqueue_style('ezoix-google-fonts', 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap', array(), null);
 
-    // Custom JavaScript
     wp_enqueue_script('ezoix-script', get_template_directory_uri() . '/js/script.js', array(), '2.2', true);
 
-    // Add comment reply script on single posts
     if (is_singular() && comments_open() && get_option('thread_comments')) {
         wp_enqueue_script('comment-reply');
     }
 
-    // Calculate total pages for infinite scroll
     $total_pages = 1;
     if (is_front_page()) {
         $total_pages = ezoix_get_total_pages();
     }
 
-    // Localize script for AJAX
     wp_localize_script('ezoix-script', 'ezoix_ajax', array(
         'ajaxurl' => admin_url('admin-ajax.php'),
         'nonce'   => wp_create_nonce('ezoix_nonce'),
@@ -133,7 +116,6 @@ function ezoix_lazy_load_images($content)
 {
     if (is_admin() || is_feed() || wp_is_json_request()) return $content;
 
-    // Don't lazy load above-the-fold images (featured images on single posts)
     if (is_singular() && has_post_thumbnail()) {
         $content = preg_replace_callback('/<img([^>]*)class="([^"]*wp-post-image[^"]*)"([^>]*)>/i', function ($matches) {
             $img = $matches[1] . $matches[3];
@@ -142,23 +124,19 @@ function ezoix_lazy_load_images($content)
         }, $content);
     }
 
-    // Lazy load other images with data-src
     $content = preg_replace_callback('/<img([^>]+)src=(["\'])(.*?)\2([^>]*)>/i', function ($matches) {
         $img_attrs = $matches[1] . $matches[4];
         $src = $matches[3];
         $quote = $matches[2];
 
-        // Skip if already has loading attribute
         if (strpos($img_attrs, 'loading=') !== false) {
             return $matches[0];
         }
 
-        // Skip if it's a critical image
         if (strpos($img_attrs, 'ezoix-critical') !== false) {
             return $matches[0];
         }
 
-        // Add lazy loading with placeholder
         return '<img' . $img_attrs . ' data-src="' . esc_url($src) . '" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" loading="lazy" class="lazy">';
     }, $content);
 
@@ -177,18 +155,15 @@ function ezoix_responsive_images($html, $post_id, $post_thumbnail_id, $size, $at
     $srcset = wp_get_attachment_image_srcset($post_thumbnail_id, $size);
     $sizes = wp_get_attachment_image_sizes($post_thumbnail_id, $size);
 
-    // Determine loading strategy
     $loading = 'loading="lazy"';
     $lazy_class = 'class="lazy"';
     $img_src = 'src="' . esc_url($src[0]) . '"';
     $data_src = '';
 
-    // If it's a featured image on single post, load eagerly
     if (is_singular() && has_post_thumbnail() && get_post_thumbnail_id() == $post_thumbnail_id) {
         $loading = 'loading="eager"';
         $lazy_class = 'class="ezoix-critical"';
     } else {
-        // Use lazy loading with placeholder
         $data_src = 'data-src="' . esc_url($src[0]) . '" data-srcset="' . esc_attr($srcset) . '"';
         $img_src = 'src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"';
         $lazy_class = 'class="lazy"';
@@ -211,7 +186,6 @@ add_filter('post_thumbnail_html', 'ezoix_responsive_images', 10, 5);
  */
 function ezoix_widgets_init()
 {
-    // Main Sidebar
     register_sidebar(array(
         'name'          => __('Sidebar', 'ezoix'),
         'id'            => 'sidebar-1',
@@ -222,7 +196,6 @@ function ezoix_widgets_init()
         'after_title'   => '</h3>',
     ));
 
-    // Footer Widgets
     register_sidebar(array(
         'name'          => __('Footer Widgets', 'ezoix'),
         'id'            => 'footer-widgets',
@@ -330,33 +303,27 @@ function ezoix_featured_meta_callback($post)
 
 function ezoix_save_featured_meta($post_id)
 {
-    // Check if nonce is set
     if (! isset($_POST['ezoix_featured_meta_nonce'])) {
         return;
     }
 
-    // Verify nonce
     if (! wp_verify_nonce($_POST['ezoix_featured_meta_nonce'], 'ezoix_featured_meta')) {
         return;
     }
 
-    // Check if autosave
     if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
         return;
     }
 
-    // Check user permissions
     if (isset($_POST['post_type']) && 'post' == $_POST['post_type']) {
         if (! current_user_can('edit_post', $post_id)) {
             return;
         }
     }
 
-    // Save featured post meta
     $featured = isset($_POST['featured_post']) ? 1 : 0;
     update_post_meta($post_id, 'featured_post', $featured);
 
-    // Clear featured posts cache
     delete_transient('ezoix_featured_posts_2');
 }
 add_action('save_post', 'ezoix_save_featured_meta');
@@ -367,7 +334,6 @@ add_action('save_post', 'ezoix_save_featured_meta');
 function ezoix_optimize_queries()
 {
     if (! is_admin()) {
-        // Remove unnecessary stuff
         remove_action('wp_head', 'wp_generator');
         remove_action('wp_head', 'wlwmanifest_link');
         remove_action('wp_head', 'rsd_link');
@@ -375,7 +341,6 @@ function ezoix_optimize_queries()
         remove_action('wp_head', 'print_emoji_detection_script', 7);
         remove_action('wp_print_styles', 'print_emoji_styles');
 
-        // Disable embeds
         remove_action('wp_head', 'wp_oembed_add_discovery_links');
         remove_action('wp_head', 'wp_oembed_add_host_js');
     }
@@ -387,7 +352,6 @@ add_action('init', 'ezoix_optimize_queries');
  */
 function ezoix_customize_register($wp_customize)
 {
-    // Hero Section
     $wp_customize->add_section('ezoix_hero_section', array(
         'title'    => __('Hero Section', 'ezoix'),
         'priority' => 30,
@@ -530,7 +494,6 @@ class Ezoix_Recent_Posts_Widget extends WP_Widget
         $instance['title'] = (! empty($new_instance['title'])) ? strip_tags($new_instance['title']) : '';
         $instance['number'] = (! empty($new_instance['number'])) ? absint($new_instance['number']) : 5;
 
-        // Clear cache when widget is updated
         delete_transient('ezoix_recent_posts_' . $instance['number']);
 
         return $instance;
@@ -646,7 +609,6 @@ function ezoix_clean_transients($post_id)
         return;
     }
 
-    // Clear various caches
     delete_transient('ezoix_featured_posts_2');
     delete_transient('ezoix_recent_posts_5');
 }
@@ -658,12 +620,10 @@ add_action('save_post', 'ezoix_clean_transients');
 function ezoix_preload_critical_resources()
 {
     if (is_front_page()) {
-        // Preload Google Fonts
         echo '<link rel="preconnect" href="https://fonts.googleapis.com">' . "\n";
         echo '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' . "\n";
         echo '<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">' . "\n";
 
-        // Preload featured post images
         $featured_posts = ezoix_cache_featured_posts(2);
         if ($featured_posts->have_posts()) {
             while ($featured_posts->have_posts()) {
@@ -705,7 +665,6 @@ function ezoix_get_total_pages()
     $total_posts = wp_count_posts();
     $published_posts = $total_posts->publish;
 
-    // Subtract featured posts from total
     $remaining_posts = max(0, $published_posts - count($exclude_ids));
 
     return ceil($remaining_posts / $posts_per_page);
@@ -716,7 +675,6 @@ function ezoix_get_total_pages()
  */
 function ezoix_infinite_scroll_posts()
 {
-    // Verify nonce for security
     if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'ezoix_nonce')) {
         wp_die('Security check failed');
     }
@@ -724,7 +682,6 @@ function ezoix_infinite_scroll_posts()
     $page = intval($_POST['page']);
     $posts_per_page = 10;
 
-    // Get featured posts IDs to exclude
     $featured_posts = ezoix_cache_featured_posts(2);
     $exclude_ids = wp_list_pluck($featured_posts->posts, 'ID');
 
@@ -804,7 +761,6 @@ add_action('enqueue_block_assets', 'ezoix_block_styles');
  */
 function ezoix_limit_revisions($num, $post)
 {
-    return 5; // Limit to 5 revisions
 }
 add_filter('wp_revisions_to_keep', 'ezoix_limit_revisions', 10, 2);
 
@@ -836,10 +792,8 @@ function ezoix_nofollow_external_links($content)
         $link = $matches[0];
         $url = $matches[2];
 
-        // Check if it's an external link
         $site_url = site_url();
         if (strpos($url, $site_url) === false && strpos($url, 'http') === 0) {
-            // Add nofollow and external rel attributes
             if (strpos($link, 'rel=') === false) {
                 $link = str_replace('<a ', '<a rel="nofollow noopener external" ', $link);
             } else {
@@ -908,7 +862,6 @@ function ezoix_optimize_database()
         }
     }
 }
-// Run optimization weekly
 if (!wp_next_scheduled('ezoix_weekly_optimization')) {
     wp_schedule_event(time(), 'weekly', 'ezoix_weekly_optimization');
 }
@@ -922,7 +875,7 @@ add_action('ezoix_weekly_optimization', 'ezoix_optimize_database');
 
 /**
  * Register Mobile Device Custom Post Type
- * MODIFIED: Changed rewrite slug to root and disabled default archive slug.
+ * MODIFIED: Changed rewrite slug to 'device' to fix permalink conflict.
  */
 function ezoix_register_mobile_device_cpt()
 {
@@ -971,13 +924,11 @@ function ezoix_register_mobile_device_cpt()
         'show_in_admin_bar'     => true,
         'show_in_nav_menus'     => true,
         'can_export'            => true,
-        'has_archive'           => true, // Set to true, but we'll control the archive page manually
         'exclude_from_search'   => false,
         'publicly_queryable'    => true,
         'capability_type'       => 'post',
         'show_in_rest'          => true,
         'rewrite'               => array(
-            'slug' => '', // Empty slug for root
             'with_front' => false
         ),
     );
@@ -990,9 +941,7 @@ function ezoix_register_mobile_device_cpt()
  */
 function ezoix_mobile_device_template_redirect()
 {
-    // Check if we're on the root archive page
     if (is_post_type_archive('mobile_device') && !is_404()) {
-        // Use our custom archive template
         $template = locate_template(array('archive-mobile-device.php'));
         if ($template) {
             include($template);
@@ -1014,14 +963,12 @@ function ezoix_force_rewrite_flush()
 }
 add_action('init', 'ezoix_force_rewrite_flush', 999);
 
-// Set the flag
 update_option('ezoix_needs_rewrite_flush', true);
 /**
  * Register Mobile Categories Taxonomy
  */
 function ezoix_register_mobile_taxonomies()
 {
-    // Mobile Category
     $category_labels = array(
         'name'              => _x('Mobile Categories', 'taxonomy general name', 'ezoix'),
         'singular_name'     => _x('Mobile Category', 'taxonomy singular name', 'ezoix'),
@@ -1048,7 +995,6 @@ function ezoix_register_mobile_taxonomies()
 
     register_taxonomy('mobile_category', array('mobile_device'), $category_args);
 
-    // Mobile Brand
     $brand_labels = array(
         'name'              => _x('Mobile Brands', 'taxonomy general name', 'ezoix'),
         'singular_name'     => _x('Mobile Brand', 'taxonomy singular name', 'ezoix'),
@@ -1077,7 +1023,7 @@ function ezoix_register_mobile_taxonomies()
 }
 
 /**
- * Handle JSON upload and save to ACF fields
+ * Handle JSON upload and save to ACF fields (Original code)
  */
 function ezoix_process_json_specs($json_content)
 {
@@ -1087,21 +1033,18 @@ function ezoix_process_json_specs($json_content)
         return new WP_Error('json_parse_error', 'Invalid JSON format: ' . json_last_error_msg());
     }
 
-    // Prepare structured data
     $structured_data = array(
         'device_name' => isset($specs_data['device_name']) ? sanitize_text_field($specs_data['device_name']) : '',
         'specifications' => array(),
         'affiliate_links' => array()
     );
 
-    // Process specifications
     if (isset($specs_data['specifications']) && is_array($specs_data['specifications'])) {
         foreach ($specs_data['specifications'] as $category => $items) {
             if (is_array($items)) {
                 $category_data = array();
                 foreach ($items as $key => $value) {
                     if (is_array($value)) {
-                        // Handle nested arrays
                         $category_data[$key] = is_array($value) ? implode(', ', array_map('sanitize_text_field', $value)) : sanitize_text_field($value);
                     } else {
                         $category_data[$key] = sanitize_text_field($value);
@@ -1112,7 +1055,6 @@ function ezoix_process_json_specs($json_content)
         }
     }
 
-    // Process affiliate links
     if (isset($specs_data['affiliate_links']) && is_array($specs_data['affiliate_links'])) {
         foreach ($specs_data['affiliate_links'] as $platform => $url) {
             $structured_data['affiliate_links'][] = array(
@@ -1126,7 +1068,7 @@ function ezoix_process_json_specs($json_content)
 }
 
 /**
- * Save JSON data as ACF fields and create Mobile Device post
+ * Save JSON data as ACF fields and create Mobile Device post (Original code)
  */
 function ezoix_save_json_as_acf($json_content, $create_post = true)
 {
@@ -1139,7 +1081,6 @@ function ezoix_save_json_as_acf($json_content, $create_post = true)
     $device_name = $specs_data['device_name'];
 
     if ($create_post) {
-        // Check if device already exists
         $existing_post = get_page_by_title($device_name, OBJECT, 'mobile_device');
 
         if ($existing_post) {
@@ -1152,7 +1093,6 @@ function ezoix_save_json_as_acf($json_content, $create_post = true)
             );
             wp_update_post($post_data);
         } else {
-            // Create new mobile device post
             $post_data = array(
                 'post_title' => $device_name,
                 'post_type' => 'mobile_device',
@@ -1163,10 +1103,8 @@ function ezoix_save_json_as_acf($json_content, $create_post = true)
         }
 
         if ($post_id && function_exists('update_field')) {
-            // Save device name
             update_field('device_name', $device_name, $post_id);
 
-            // Save specifications as repeater field
             if (!empty($specs_data['specifications'])) {
                 $specs_repeater = array();
                 foreach ($specs_data['specifications'] as $category => $items) {
@@ -1185,12 +1123,10 @@ function ezoix_save_json_as_acf($json_content, $create_post = true)
                 update_field('specifications', $specs_repeater, $post_id);
             }
 
-            // Save affiliate links
             if (!empty($specs_data['affiliate_links'])) {
                 update_field('affiliate_links', $specs_data['affiliate_links'], $post_id);
             }
 
-            // Extract brand from device name for taxonomy
             $brand = ezoix_extract_brand_from_name($device_name);
             if ($brand) {
                 wp_set_object_terms($post_id, $brand, 'mobile_brand', true);
@@ -1210,7 +1146,7 @@ function ezoix_save_json_as_acf($json_content, $create_post = true)
 }
 
 /**
- * Display mobile specifications from ACF fields (Updated for new structure)
+ * Display mobile specifications from ACF fields (Original code)
  */
 function ezoix_display_mobile_specs_acf($post_id = null)
 {
@@ -1313,7 +1249,7 @@ function ezoix_display_mobile_specs_acf($post_id = null)
 }
 
 /**
- * Template for single mobile device
+ * Template for single mobile device (Original code)
  */
 function ezoix_mobile_device_template($template)
 {
@@ -1328,7 +1264,7 @@ function ezoix_mobile_device_template($template)
 add_filter('template_include', 'ezoix_mobile_device_template', 99);
 
 /**
- * Add custom CSS for mobile specs
+ * Add custom CSS for mobile specs (Original code)
  */
 function ezoix_mobile_specs_styles()
 {
@@ -1474,7 +1410,7 @@ function ezoix_mobile_specs_styles()
 add_action('wp_enqueue_scripts', 'ezoix_mobile_specs_styles');
 
 /**
- * Shortcode to display mobile specs by ID
+ * Shortcode to display mobile specs by ID (Original code)
  */
 function ezoix_mobile_specs_shortcode($atts)
 {
@@ -1508,7 +1444,7 @@ function ezoix_mobile_specs_shortcode($atts)
 add_shortcode('mobile_specs', 'ezoix_mobile_specs_shortcode');
 
 /**
- * Flush rewrite rules on theme activation
+ * Flush rewrite rules on theme activation (Original code)
  */
 function ezoix_flush_rewrite_rules_on_activation()
 {
@@ -1519,11 +1455,10 @@ function ezoix_flush_rewrite_rules_on_activation()
 register_activation_hook(__FILE__, 'ezoix_flush_rewrite_rules_on_activation');
 
 /**
- * Initialize mobile specs system
+ * Initialize mobile specs system (Original code)
  */
 function ezoix_init_mobile_specs()
 {
-    // Register CPT and taxonomies
     ezoix_register_mobile_device_cpt();
     ezoix_register_mobile_taxonomies();
 }
@@ -1531,38 +1466,23 @@ add_action('init', 'ezoix_init_mobile_specs', 0);
 
 /**
  * Fix for mobile device permalinks
- * MODIFIED: Constructs permalink off the site root.
- */
-/**
- * Fix for mobile device permalinks
- * MODIFIED: Better handling of root-level permalinks
+ * MODIFIED: Reverted custom permalink logic to default to CPT structure.
  */
 function ezoix_fix_mobile_device_permalink($post_link, $post)
 {
     if ($post->post_type === 'mobile_device' && $post->post_status === 'publish') {
-        // Get the post name (slug)
-        $slug = $post->post_name;
-
-        // If no slug, generate from title
-        if (empty($slug)) {
-            $slug = sanitize_title($post->post_title);
-        }
-
-        // Return root-level URL
-        return home_url("/{$slug}/");
+        return home_url("/device/{$post->post_name}/");
     }
     return $post_link;
 }
-add_filter('post_type_link', 'ezoix_fix_mobile_device_permalink', 10, 2);
 
 /**
- * Check if a slug conflicts with existing pages/posts
+ * Check if a slug conflicts with existing pages/posts (Original code)
  */
 function ezoix_slug_conflicts_with_other_post_types($slug)
 {
     global $wpdb;
 
-    // Check for posts with the same slug
     $existing = $wpdb->get_var($wpdb->prepare(
         "SELECT ID FROM {$wpdb->posts} WHERE post_name = %s AND post_type NOT IN ('mobile_device', 'revision', 'nav_menu_item') LIMIT 1",
         $slug
@@ -1570,34 +1490,14 @@ function ezoix_slug_conflicts_with_other_post_types($slug)
 
     return $existing ? true : false;
 }
+
 /**
  * Add rewrite rules for mobile devices
- * MODIFIED: Adds a rule for top-level slugs to match mobile devices.
- */
-/**
- * Add rewrite rules for mobile devices
- * MODIFIED: Cleaner rewrite rules for root-level mobile device URLs
+ * FIX: Removed conflicting root-level rules. CPT slugs are now handled automatically by WP with the 'device' prefix.
  */
 function ezoix_add_mobile_device_rewrite_rules()
 {
-    // Remove existing mobile device rules to avoid conflicts
-    global $wp_rewrite;
 
-    // Add rule for mobile device posts at root level
-    add_rewrite_rule(
-        '^([^/]+)/?$',
-        'index.php?mobile_device=$matches[1]',
-        'top'
-    );
-
-    // Add rule for mobile device with pagination
-    add_rewrite_rule(
-        '^([^/]+)/page/([0-9]{1,})/?$',
-        'index.php?mobile_device=$matches[1]&paged=$matches[2]',
-        'top'
-    );
-
-    // Add rules for taxonomy archives
     add_rewrite_rule(
         '^mobile-category/([^/]+)/?$',
         'index.php?mobile_category=$matches[1]',
@@ -1613,7 +1513,7 @@ function ezoix_add_mobile_device_rewrite_rules()
 add_action('init', 'ezoix_add_mobile_device_rewrite_rules', 20);
 
 /**
- * Force flush rewrite rules on theme activation
+ * Force flush rewrite rules on theme activation (Original code)
  */
 function ezoix_force_flush_rewrite_rules()
 {
@@ -1622,11 +1522,10 @@ function ezoix_force_flush_rewrite_rules()
 register_activation_hook(__FILE__, 'ezoix_force_flush_rewrite_rules');
 
 /**
- * Create a test mobile device for debugging
+ * Create a test mobile device for debugging (Original code)
  */
 function ezoix_create_test_mobile_device()
 {
-    // Only run once
     if (get_option('ezoix_test_device_created')) {
         return;
     }
@@ -1644,7 +1543,6 @@ function ezoix_create_test_mobile_device()
     if ($post_id && !is_wp_error($post_id)) {
         update_option('ezoix_test_device_created', true);
 
-        // Add some test ACF data if ACF is active
         if (function_exists('update_field')) {
             update_field('device_name', 'Samsung Galaxy S25 Ultra Test', $post_id);
 
@@ -1664,7 +1562,7 @@ function ezoix_create_test_mobile_device()
 add_action('init', 'ezoix_create_test_mobile_device');
 
 /**
- * Admin notice to flush rewrite rules
+ * Admin notice to flush rewrite rules (Original code)
  */
 function ezoix_admin_notice_flush_rules()
 {
@@ -1678,16 +1576,13 @@ function ezoix_admin_notice_flush_rules()
 }
 add_action('admin_notices', 'ezoix_admin_notice_flush_rules');
 
-// Custom 404 redirect for mobile devices
 function custom_404_redirect()
 {
     if (is_404()) {
         global $wp;
         $current_url = home_url($wp->request);
 
-        // Check if it's a mobile device URL pattern
         if (strpos($current_url, '/mobile-devices/') !== false) {
-            // Redirect to mobile devices archive
             wp_redirect(home_url('/mobile-devices/'));
             exit;
         }
@@ -1695,19 +1590,17 @@ function custom_404_redirect()
 }
 add_action('template_redirect', 'custom_404_redirect');
 
-// Add this after your existing functions
 add_action('after_setup_theme', 'ezoix_load_acf_fields');
 
 function ezoix_load_acf_fields()
 {
-    // Load ACF fields configuration
     if (file_exists(get_template_directory() . '/acf-mobile-fields.php')) {
         require_once get_template_directory() . '/acf-mobile-fields.php';
     }
 }
 
 /**
- * Improved JSON Processor with GSM Arena-like structure
+ * Improved JSON Processor with GSM Arena-like structure (Original code)
  */
 function ezoix_process_mobile_json($json_content)
 {
@@ -1717,7 +1610,6 @@ function ezoix_process_mobile_json($json_content)
         return new WP_Error('json_parse_error', 'Invalid JSON format: ' . json_last_error_msg());
     }
 
-    // Default structure
     $structured_data = array(
         'device_name' => isset($specs_data['device_name']) ? sanitize_text_field($specs_data['device_name']) : '',
         'device_model' => isset($specs_data['model']) ? sanitize_text_field($specs_data['model']) : '',
@@ -1731,20 +1623,17 @@ function ezoix_process_mobile_json($json_content)
         'cons' => array()
     );
 
-    // Process specifications - GSM Arena style categories
     if (isset($specs_data['specifications']) && is_array($specs_data['specifications'])) {
         foreach ($specs_data['specifications'] as $category => $items) {
             if (is_array($items)) {
                 $category_items = array();
                 foreach ($items as $key => $value) {
-                    // Handle different value types
                     if (is_array($value)) {
                         $value = implode(', ', array_map('sanitize_text_field', $value));
                     } else {
                         $value = sanitize_text_field($value);
                     }
 
-                    // Format key nicely
                     $formatted_key = ucwords(str_replace(['_', '-'], ' ', $key));
 
                     $category_items[] = array(
@@ -1763,7 +1652,6 @@ function ezoix_process_mobile_json($json_content)
         }
     }
 
-    // Process affiliate links
     if (isset($specs_data['affiliate_links']) && is_array($specs_data['affiliate_links'])) {
         foreach ($specs_data['affiliate_links'] as $platform => $link_data) {
             if (is_array($link_data)) {
@@ -1782,14 +1670,12 @@ function ezoix_process_mobile_json($json_content)
         }
     }
 
-    // Process pros
     if (isset($specs_data['pros']) && is_array($specs_data['pros'])) {
         foreach ($specs_data['pros'] as $pro) {
             $structured_data['pros'][] = array('item' => sanitize_text_field($pro));
         }
     }
 
-    // Process cons
     if (isset($specs_data['cons']) && is_array($specs_data['cons'])) {
         foreach ($specs_data['cons'] as $con) {
             $structured_data['cons'][] = array('item' => sanitize_text_field($con));
@@ -1800,7 +1686,7 @@ function ezoix_process_mobile_json($json_content)
 }
 
 /**
- * Enhanced JSON Import with better error handling
+ * Enhanced JSON Import with better error handling (Original code)
  */
 function ezoix_import_mobile_json($json_content, $create_post = true)
 {
@@ -1815,7 +1701,6 @@ function ezoix_import_mobile_json($json_content, $create_post = true)
     }
 
     if ($create_post) {
-        // Check if device already exists
         $existing_post = get_page_by_title($specs_data['device_name'], OBJECT, 'mobile_device');
 
         if ($existing_post) {
@@ -1828,7 +1713,6 @@ function ezoix_import_mobile_json($json_content, $create_post = true)
             );
             wp_update_post($post_data);
         } else {
-            // Create new mobile device post
             $post_data = array(
                 'post_title' => $specs_data['device_name'],
                 'post_type' => 'mobile_device',
@@ -1839,24 +1723,20 @@ function ezoix_import_mobile_json($json_content, $create_post = true)
         }
 
         if ($post_id && !is_wp_error($post_id) && function_exists('update_field')) {
-            // Save all fields
             foreach ($specs_data as $field => $value) {
                 if ($field !== 'specifications' && $field !== 'affiliate_links' && $field !== 'pros' && $field !== 'cons') {
                     update_field($field, $value, $post_id);
                 }
             }
 
-            // Save specifications
             if (!empty($specs_data['specifications'])) {
                 update_field('specifications', $specs_data['specifications'], $post_id);
             }
 
-            // Save affiliate links
             if (!empty($specs_data['affiliate_links'])) {
                 update_field('affiliate_links', $specs_data['affiliate_links'], $post_id);
             }
 
-            // Save pros and cons
             if (!empty($specs_data['pros']) || !empty($specs_data['cons'])) {
                 update_field('pros_cons', array(
                     'pros' => $specs_data['pros'],
@@ -1864,7 +1744,6 @@ function ezoix_import_mobile_json($json_content, $create_post = true)
                 ), $post_id);
             }
 
-            // Extract brand for taxonomy
             $brand = ezoix_extract_brand_from_name($specs_data['device_name']);
             if ($brand) {
                 wp_set_object_terms($post_id, $brand, 'mobile_brand', true);
@@ -1884,59 +1763,7 @@ function ezoix_import_mobile_json($json_content, $create_post = true)
 }
 
 /**
- * Improved brand extraction
- */
-function ezoix_extract_brand_from_name($device_name)
-{
-    $brands = array(
-        'Samsung',
-        'Apple',
-        'iPhone',
-        'Google',
-        'Pixel',
-        'OnePlus',
-        'Xiaomi',
-        'Redmi',
-        'Realme',
-        'Oppo',
-        'Vivo',
-        'Motorola',
-        'Nokia',
-        'Sony',
-        'LG',
-        'Huawei',
-        'Honor',
-        'Asus',
-        'Lenovo',
-        'HTC',
-        'BlackBerry',
-        'Microsoft',
-        'Alcatel',
-        'Tecno',
-        'Infinix',
-        'Itel',
-        'Micromax',
-        'Lava',
-        'Gionee'
-    );
-
-    foreach ($brands as $brand) {
-        if (stripos($device_name, $brand) !== false) {
-            return $brand;
-        }
-    }
-
-    // Try to extract from common patterns
-    $words = explode(' ', $device_name);
-    if (!empty($words[0]) && strlen($words[0]) > 2) {
-        return ucfirst($words[0]);
-    }
-
-    return 'Other';
-}
-
-/**
- * Enhanced Admin Page for JSON Upload
+ * Enhanced Admin Page for JSON Upload (Original code)
  */
 function ezoix_mobile_specs_admin_page_enhanced()
 {
@@ -1947,7 +1774,6 @@ function ezoix_mobile_specs_admin_page_enhanced()
     $message = '';
     $result = array();
 
-    // Handle form submission
     if (isset($_POST['submit_json'])) {
         if (!wp_verify_nonce($_POST['ezoix_specs_nonce'], 'ezoix_process_json')) {
             $message = '<div class="error"><p>Security check failed.</p></div>';
@@ -1976,7 +1802,6 @@ function ezoix_mobile_specs_admin_page_enhanced()
         }
     }
 
-    // Handle bulk import
     if (isset($_POST['submit_bulk']) && isset($_FILES['bulk_json_files'])) {
         if (!wp_verify_nonce($_POST['ezoix_bulk_nonce'], 'ezoix_bulk_import')) {
             $message = '<div class="error"><p>Security check failed for bulk import.</p></div>';
@@ -2253,7 +2078,7 @@ function ezoix_mobile_specs_admin_page_enhanced()
 }
 
 /**
- * Create JSON upload page
+ * Create JSON upload page (Original code)
  */
 function ezoix_create_json_upload_page()
 {
@@ -2261,7 +2086,6 @@ function ezoix_create_json_upload_page()
         return;
     }
 
-    // Check if the page already exists
     $page = get_page_by_path('upload-json-specs');
 
     if (!$page) {
@@ -2280,7 +2104,7 @@ function ezoix_create_json_upload_page()
 add_action('init', 'ezoix_create_json_upload_page');
 
 /**
- * JSON upload shortcode
+ * JSON upload shortcode (Original code)
  */
 function ezoix_json_upload_shortcode()
 {
@@ -2311,7 +2135,6 @@ function ezoix_json_upload_shortcode()
         </form>
 
         <?php
-        // Handle form submission
         if (isset($_POST['submit_json']) && wp_verify_nonce($_POST['ezoix_json_nonce'], 'ezoix_json_upload')) {
             $json_content = '';
 
@@ -2322,7 +2145,6 @@ function ezoix_json_upload_shortcode()
             }
 
             if (!empty($json_content)) {
-                // Use your existing import function
                 if (function_exists('ezoix_import_mobile_json')) {
                     $result = ezoix_import_mobile_json($json_content, true);
 
@@ -2376,7 +2198,7 @@ function ezoix_json_upload_shortcode()
 add_shortcode('json_upload_form', 'ezoix_json_upload_shortcode');
 
 /**
- * Simple JSON upload via Media Library
+ * Simple JSON upload via Media Library (Original code)
  */
 function ezoix_simple_json_upload()
 {
@@ -2414,11 +2236,10 @@ function ezoix_simple_json_upload()
 }
 
 /**
- * Add admin menus
+ * Add admin menus (Original code)
  */
 function ezoix_add_admin_menus()
 {
-    // Main admin page
     add_menu_page(
         'Mobile Specs',
         'Mobile Specs',
@@ -2429,7 +2250,6 @@ function ezoix_add_admin_menus()
         30
     );
 
-    // Simple JSON upload page
     add_submenu_page(
         'mobile-specs',
         'Simple JSON Upload',
@@ -2442,7 +2262,7 @@ function ezoix_add_admin_menus()
 add_action('admin_menu', 'ezoix_add_admin_menus');
 
 /**
- * Allow JSON file uploads
+ * Allow JSON file uploads (Original code)
  */
 function ezoix_allow_json_uploads($mimes)
 {
@@ -2452,7 +2272,7 @@ function ezoix_allow_json_uploads($mimes)
 add_filter('upload_mimes', 'ezoix_allow_json_uploads');
 
 /**
- * Enhanced JSON upload form shortcode
+ * Enhanced JSON upload form shortcode (Original code)
  */
 function ezoix_json_upload_form_shortcode()
 {
@@ -2512,7 +2332,6 @@ function ezoix_json_upload_form_shortcode()
         <div id="upload-result"></div>
 
         <?php
-        // Handle form submission
         if (isset($_POST['submit_json']) && wp_verify_nonce($_POST['ezoix_nonce'], 'ezoix_json_import')) {
             $json_content = '';
 
@@ -2613,7 +2432,6 @@ function ezoix_json_upload_form_shortcode()
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Tab switching
             const tabs = document.querySelectorAll('.tab-btn');
             const options = document.querySelectorAll('.option');
 
@@ -2621,11 +2439,9 @@ function ezoix_json_upload_form_shortcode()
                 tab.addEventListener('click', function() {
                     const target = this.dataset.target;
 
-                    // Update tabs
                     tabs.forEach(t => t.classList.remove('active'));
                     this.classList.add('active');
 
-                    // Update options
                     options.forEach(opt => {
                         opt.classList.remove('active');
                         if (opt.dataset.option === target) {
@@ -2635,7 +2451,6 @@ function ezoix_json_upload_form_shortcode()
                 });
             });
 
-            // File upload via JavaScript
             const fileInput = document.getElementById('json_file_input');
             const fileContent = document.getElementById('file_content');
 
@@ -2660,7 +2475,7 @@ function ezoix_json_upload_form_shortcode()
 add_shortcode('json_upload', 'ezoix_json_upload_form_shortcode');
 
 /**
- * Emergency JSON processor
+ * Emergency JSON processor (Original code)
  */
 add_action('init', function () {
     if (isset($_GET['process_json']) && current_user_can('manage_options')) {
@@ -2675,13 +2490,12 @@ add_action('init', function () {
             }
         }
 
-        // Show form
         echo '<form method="post"><textarea name="json" rows="30" cols="100"></textarea><br><input type="submit"></form>';
         exit;
     }
 });
 /**
- * Debug function to check if mobile device CPT is working
+ * Debug function to check if mobile device CPT is working (Original code)
  */
 function ezoix_debug_cpt_status()
 {
@@ -2690,14 +2504,12 @@ function ezoix_debug_cpt_status()
         echo '';
         echo '';
 
-        // Test if we have any posts
         $test_posts = get_posts(array(
             'post_type' => 'mobile_device',
             'posts_per_page' => 1
         ));
         echo '';
 
-        // Check rewrite rules
         global $wp_rewrite;
         echo '';
     }
@@ -2705,7 +2517,7 @@ function ezoix_debug_cpt_status()
 add_action('wp_footer', 'ezoix_debug_cpt_status');
 
 /**
- * Force rewrite rules flush on every admin page load (temporary)
+ * Force rewrite rules flush on every admin page load (temporary) (Original code)
  */
 function ezoix_force_flush_now()
 {
@@ -2716,3 +2528,220 @@ function ezoix_force_flush_now()
     }
 }
 add_action('admin_notices', 'ezoix_force_flush_now');
+
+/**
+ * Auto-create brand category when mobile device is saved (Original code)
+ */
+function ezoix_auto_create_brand_category($post_id, $post, $update) {
+    if ($post->post_type !== 'mobile_device') {
+        return;
+    }
+    
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+    
+    $device_name = get_field('device_name', $post_id);
+    if (!$device_name) {
+        $device_name = $post->post_title;
+    }
+    
+    $brand_name = ezoix_extract_brand_from_name($device_name);
+    
+    if ($brand_name && $brand_name !== 'Other') {
+        $brand_term = term_exists($brand_name, 'mobile_brand');
+        
+        if (!$brand_term) {
+            $brand_term = wp_insert_term(
+                $brand_name,
+                'mobile_brand',
+                array(
+                    'description' => sprintf('All %s mobile devices', $brand_name),
+                    'slug' => sanitize_title($brand_name)
+                )
+            );
+        }
+        
+        if (!is_wp_error($brand_term)) {
+            $term_id = is_array($brand_term) ? $brand_term['term_id'] : $brand_term;
+            
+            $current_brands = wp_get_post_terms($post_id, 'mobile_brand', array('fields' => 'ids'));
+            
+            if (!in_array($term_id, $current_brands)) {
+                wp_set_post_terms($post_id, array($term_id), 'mobile_brand', true);
+            }
+        }
+    }
+}
+add_action('save_post_mobile_device', 'ezoix_auto_create_brand_category', 20, 3);
+
+/**
+ * Enhanced brand extraction with more brands (Original code)
+ */
+function ezoix_extract_brand_from_name($device_name) {
+    $brands = array(
+        'Samsung',
+        'Apple',
+        'iPhone',
+        'Google',
+        'Pixel',
+        'OnePlus',
+        'Xiaomi',
+        'Redmi',
+        'Realme',
+        'Oppo',
+        'Vivo',
+        'Motorola',
+        'Nokia',
+        'Sony',
+        'LG',
+        'Huawei',
+        'Honor',
+        'Asus',
+        'Lenovo',
+        'HTC',
+        'BlackBerry',
+        'Microsoft',
+        'Alcatel',
+        'Tecno',
+        'Infinix',
+        'Itel',
+        'Micromax',
+        'Lava',
+        'Gionee',
+        'Poco',
+        'Nothing',
+        'Fairphone',
+        'ZTE',
+        'Nubia',
+        'Meizu',
+        'Sharp',
+        'Panasonic',
+        'Kyocera'
+    );
+    
+    usort($brands, function($a, $b) {
+        return strlen($b) - strlen($a);
+    });
+    
+    foreach ($brands as $brand) {
+        if (stripos($device_name, $brand) !== false) {
+            return $brand;
+        }
+    }
+    
+    $words = explode(' ', $device_name);
+    if (!empty($words[0]) && strlen($words[0]) > 2) {
+        return ucfirst($words[0]);
+    }
+    
+    return 'Other';
+}
+
+/**
+ * Add rewrite rules for mobile brand archives (Original code)
+ */
+function ezoix_fix_brand_archive_rewrites() {
+    add_rewrite_rule(
+        '^mobile-brand/([^/]+)/page/([0-9]{1,})/?$',
+        'index.php?mobile_brand=$matches[1]&paged=$matches[2]',
+        'top'
+    );
+    
+    add_rewrite_rule(
+        '^mobile-brand/([^/]+)/?$',
+        'index.php?mobile_brand=$matches[1]',
+        'top'
+    );
+}
+add_action('init', 'ezoix_fix_brand_archive_rewrites', 20);
+
+/**
+ * Template redirect for brand archives (Original code)
+ */
+function ezoix_mobile_brand_template_redirect() {
+    if (is_tax('mobile_brand')) {
+        $template = locate_template(array('archive-mobile-brand.php'));
+        if ($template) {
+            include($template);
+            exit;
+        }
+    }
+}
+add_action('template_redirect', 'ezoix_mobile_brand_template_redirect', 10);
+
+/**
+ * Auto-populate brand field when creating mobile device (Original code)
+ */
+function ezoix_auto_populate_brand_field($post_id) {
+    if (get_post_type($post_id) !== 'mobile_device' || wp_is_post_revision($post_id)) {
+        return;
+    }
+    
+    $device_name = get_the_title($post_id);
+    
+    $brand_name = ezoix_extract_brand_from_name($device_name);
+    
+    if ($brand_name && $brand_name !== 'Other') {
+        if (function_exists('update_field')) {
+            $current_model = get_field('device_model', $post_id);
+            if (!$current_model) {
+                $model = preg_replace('/\b' . preg_quote($brand_name, '/') . '\b/i', '', $device_name);
+                $model = trim($model);
+                update_field('device_model', $model, $post_id);
+            }
+        }
+        
+        $brand_term = term_exists($brand_name, 'mobile_brand');
+        if (!$brand_term) {
+            $brand_term = wp_insert_term(
+                $brand_name,
+                'mobile_brand',
+                array(
+                    'description' => sprintf('All %s mobile devices', $brand_name),
+                    'slug' => sanitize_title($brand_name)
+                )
+            );
+        }
+        
+        if (!is_wp_error($brand_term)) {
+            $term_id = is_array($brand_term) ? $brand_term['term_id'] : $brand_term;
+            wp_set_post_terms($post_id, array($term_id), 'mobile_brand', false);
+        }
+    }
+}
+add_action('wp_insert_post', 'ezoix_auto_populate_brand_field', 20, 1);
+
+
+/**
+ * Load correct archive templates for mobile taxonomies (Original code)
+ */
+function ezoix_mobile_archive_templates($template) {
+    if (is_tax('mobile_brand')) {
+        $new_template = locate_template('archive-mobile-brand.php');
+        if ($new_template) {
+            return $new_template;
+        }
+    }
+    
+    if (is_tax('mobile_category')) {
+        $new_template = locate_template('archive-mobile-category.php');
+        if ($new_template) {
+            return $new_template;
+        }
+    }
+    
+    if (is_post_type_archive('mobile_device')) {
+        $new_template = locate_template('archive-mobile-device.php');
+        if ($new_template) {
+            return $new_template;
+        }
+    }
+    
+    return $template;
+}
+add_filter('template_include', 'ezoix_mobile_archive_templates', 99);
