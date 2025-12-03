@@ -872,11 +872,6 @@ add_action('ezoix_weekly_optimization', 'ezoix_optimize_database');
  * MOBILE SPECS ACF INTEGRATION & CUSTOM POST TYPE
  * ============================================================================
  */
-
-/**
- * Register Mobile Device Custom Post Type
- * MODIFIED: Changed rewrite slug to 'device' to fix permalink conflict.
- */
 function ezoix_register_mobile_device_cpt()
 {
     $labels = array(
@@ -929,6 +924,7 @@ function ezoix_register_mobile_device_cpt()
         'capability_type'       => 'post',
         'show_in_rest'          => true,
         'rewrite'               => array(
+            'slug' => 'mobile-devices',
             'with_front' => false
         ),
     );
@@ -951,6 +947,33 @@ function ezoix_mobile_device_template_redirect()
 }
 add_action('template_redirect', 'ezoix_mobile_device_template_redirect');
 
+function ezoix_include_cpt_in_category_archive($query) {
+    // Only target the main query on the front-end
+    if (is_admin() || !$query->is_main_query()) {
+        return;
+    }
+
+    // Check if it's a standard WordPress category archive page
+    if ($query->is_category()) {
+        
+        // Get the current post types being queried (default is 'post')
+        $post_types = $query->get('post_type');
+
+        // Ensure $post_types is an array and include 'post' by default if empty
+        if (empty($post_types)) {
+            $post_types = array('post');
+        } elseif (!is_array($post_types)) {
+            $post_types = array($post_types);
+        }
+        
+        // Add the 'mobile_device' CPT to the list
+        if (!in_array('mobile_device', $post_types)) {
+            $post_types[] = 'mobile_device';
+            $query->set('post_type', $post_types);
+        }
+    }
+}
+add_action('pre_get_posts', 'ezoix_include_cpt_in_category_archive');
 /**
  * Flush rewrite rules on theme activation/update
  */

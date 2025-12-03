@@ -57,13 +57,11 @@
                 <p class="hero-subtitle"><?php bloginfo('description'); ?></p>
                 
                 <div class="trending-topics">
-                    <a href="<?php echo get_post_type_archive_link('mobile_device'); ?>" class="trending-topic">📱 Mobile Devices</a>
-                    <a href="<?php echo get_permalink(get_option('page_for_posts')); ?>" class="trending-topic">📝 Articles</a>
                     <?php
                     $categories = get_categories(array(
                         'orderby' => 'count',
                         'order' => 'DESC',
-                        'number' => 3,
+                        'number' => 5,
                     ));
                     
                     foreach ($categories as $category) {
