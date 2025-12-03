@@ -22,7 +22,8 @@
                                             <?php
                                             the_post_thumbnail('desktop-thumbnail', array(
                                                 'loading' => 'eager',
-                                                'alt' => get_the_title()
+                                                'alt' => get_the_title(),
+                                                'class' => 'ezoix-critical'
                                             ));
                                             ?>
                                         </a>
@@ -35,7 +36,7 @@
                                         <span class="post-date"><?php echo get_the_date(); ?></span>
                                         <span class="post-author">By <?php the_author(); ?></span>
                                     </div>
-                                    <p class="post-excerpt"><?php echo wp_trim_words(get_the_excerpt(), 15); ?></p>
+                                    <p class="post-excerpt"><?php echo wp_trim_words(get_the_excerpt(), 20); ?></p>
                                     <a href="<?php the_permalink(); ?>" class="read-more">Read More →</a>
                                 </div>
                             </article>
@@ -49,7 +50,7 @@
             <section class="latest-news">
                 <div class="section-header">
                     <h2 class="section-title">Latest News</h2>
-                    <span class="post-count"><?php echo wp_count_posts()->publish; ?> Articles</span>
+                    <span class="post-count"><?php echo number_format(wp_count_posts()->publish); ?> Articles</span>
                 </div>
 
                 <div class="posts-column" id="posts-container">
@@ -58,12 +59,18 @@
                     $posts_per_page = 10;
                     $paged = 1;
                     
+                    // Get featured posts IDs to exclude
+                    $featured_posts = ezoix_cache_featured_posts(2);
+                    $exclude_ids = wp_list_pluck($featured_posts->posts, 'ID');
+                    
                     $main_posts = new WP_Query(array(
                         'posts_per_page' => $posts_per_page,
                         'paged' => $paged,
-                        'post__not_in' => wp_list_pluck($featured_posts->posts, 'ID'),
+                        'post__not_in' => $exclude_ids,
                         'post_status' => 'publish',
                         'no_found_rows' => true,
+                        'update_post_meta_cache' => false,
+                        'update_post_term_cache' => false,
                     ));
 
                     if ($main_posts->have_posts()) :
@@ -74,11 +81,15 @@
                                     <div class="post-thumbnail">
                                         <a href="<?php the_permalink(); ?>">
                                             <?php
-                                            the_post_thumbnail('desktop-thumbnail', array(
-                                                'loading' => 'lazy',
-                                                'alt' => get_the_title()
-                                            ));
+                                            $thumbnail_url = get_the_post_thumbnail_url(get_the_ID(), 'desktop-thumbnail');
                                             ?>
+                                            <img 
+                                                data-src="<?php echo esc_url($thumbnail_url); ?>" 
+                                                src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" 
+                                                alt="<?php the_title_attribute(); ?>" 
+                                                loading="lazy" 
+                                                class="lazy"
+                                            >
                                         </a>
                                     </div>
                                 <?php endif; ?>
@@ -129,7 +140,11 @@
                 <h3 class="widget-title">Categories</h3>
                 <ul class="categories-list">
                     <?php
-                    $categories = get_categories();
+                    $categories = get_categories(array(
+                        'orderby' => 'name',
+                        'order' => 'ASC',
+                        'hide_empty' => true
+                    ));
                     foreach ($categories as $category) {
                         echo '<li><a href="' . get_category_link($category->term_id) . '">' . $category->name . ' <span class="category-count">' . $category->count . '</span></a></li>';
                     }

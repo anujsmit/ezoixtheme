@@ -1,185 +1,108 @@
+// Ezoix Tech Blog JavaScript
 document.addEventListener('DOMContentLoaded', function() {
-    // Mobile menu toggle
-    const mobileToggle = document.querySelector('.mobile-menu-toggle');
-    const mainNav = document.querySelector('.main-navigation');
+    console.log('Ezoix Tech Blog loaded');
+
+    // ===== MOBILE MENU TOGGLE =====
+    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+    const mainNavigation = document.getElementById('main-navigation');
     
-    if (mobileToggle && mainNav) {
-        mobileToggle.addEventListener('click', function(e) {
-            e.stopPropagation();
+    if (mobileMenuToggle && mainNavigation) {
+        mobileMenuToggle.addEventListener('click', function() {
             const isExpanded = this.getAttribute('aria-expanded') === 'true';
             this.setAttribute('aria-expanded', !isExpanded);
-            mainNav.classList.toggle('active');
+            mainNavigation.classList.toggle('active');
+            
+            // Update menu icon
+            const menuIcon = this.querySelector('.menu-icon');
+            if (menuIcon) {
+                menuIcon.textContent = isExpanded ? '☰' : '✕';
+            }
         });
         
         // Close menu when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!mainNav.contains(e.target) && !mobileToggle.contains(e.target)) {
-                mobileToggle.setAttribute('aria-expanded', 'false');
-                mainNav.classList.remove('active');
-            }
-        });
-        
-        // Close menu on escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                mobileToggle.setAttribute('aria-expanded', 'false');
-                mainNav.classList.remove('active');
-            }
-        });
-    }
-
-    // Infinite Scroll Variables
-    let currentPage = 1;
-    let isLoading = false;
-    let hasMorePosts = true;
-    const postsContainer = document.getElementById('posts-container');
-    const loadingIndicator = document.getElementById('infinite-scroll-loading');
-    const endMessage = document.getElementById('infinite-scroll-end');
-    const loadMoreButton = document.getElementById('load-more-posts');
-    const scrollToTopBtn = document.getElementById('scrollToTop');
-
-    // Infinite Scroll Functionality
-    function initInfiniteScroll() {
-        if (!postsContainer) return;
-
-        // Throttled scroll handler
-        let scrollTimeout;
-        window.addEventListener('scroll', function() {
-            if (scrollTimeout) {
-                clearTimeout(scrollTimeout);
-            }
-            
-            scrollTimeout = setTimeout(function() {
-                checkScrollPosition();
-            }, 100);
-        });
-
-        // Load more button fallback
-        if (loadMoreButton) {
-            loadMoreButton.addEventListener('click', loadMorePosts);
-        }
-    }
-
-    // Check if user has scrolled near bottom
-    function checkScrollPosition() {
-        if (isLoading || !hasMorePosts) return;
-
-        const scrollPosition = window.innerHeight + window.scrollY;
-        const pageHeight = document.documentElement.scrollHeight;
-        const threshold = 500; // Load when 500px from bottom
-
-        if (scrollPosition >= pageHeight - threshold) {
-            loadMorePosts();
-        }
-    }
-
-    // Load more posts via AJAX
-    function loadMorePosts() {
-        if (isLoading || !hasMorePosts) return;
-
-        isLoading = true;
-        currentPage++;
-
-        // Show loading indicator
-        if (loadingIndicator) {
-            loadingIndicator.style.display = 'block';
-        }
-
-        if (loadMoreButton) {
-            loadMoreButton.classList.add('loading');
-            loadMoreButton.disabled = true;
-        }
-
-        // AJAX request
-        fetch(ezoix_ajax.ajaxurl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({
-                action: 'infinite_scroll_posts',
-                page: currentPage,
-                nonce: ezoix_ajax.nonce
-            })
-        })
-        .then(response => response.text())
-        .then(data => {
-            if (data === 'no_more_posts') {
-                hasMorePosts = false;
-                showEndMessage();
-            } else if (data) {
-                // Add new posts with fade-in animation
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = data;
-                const newPosts = tempDiv.querySelectorAll('.post-card-compact');
-                
-                newPosts.forEach((post, index) => {
-                    post.style.opacity = '0';
-                    post.style.transform = 'translateY(20px)';
-                    postsContainer.appendChild(post);
-                    
-                    // Staggered animation
-                    setTimeout(() => {
-                        post.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-                        post.style.opacity = '1';
-                        post.style.transform = 'translateY(0)';
-                    }, index * 100);
-                });
-
-                // Update load more button
-                if (loadMoreButton) {
-                    loadMoreButton.setAttribute('data-page', currentPage);
+        document.addEventListener('click', function(event) {
+            if (!mobileMenuToggle.contains(event.target) && !mainNavigation.contains(event.target)) {
+                mobileMenuToggle.setAttribute('aria-expanded', 'false');
+                mainNavigation.classList.remove('active');
+                const menuIcon = mobileMenuToggle.querySelector('.menu-icon');
+                if (menuIcon) {
+                    menuIcon.textContent = '☰';
                 }
             }
-        })
-        .catch(error => {
-            console.error('Error loading more posts:', error);
-            // Fallback: show load more button if infinite scroll fails
-            if (loadMoreButton) {
-                loadMoreButton.style.display = 'block';
-            }
-        })
-        .finally(() => {
-            isLoading = false;
-            
-            if (loadingIndicator) {
-                loadingIndicator.style.display = 'none';
-            }
-            
-            if (loadMoreButton && hasMorePosts) {
-                loadMoreButton.classList.remove('loading');
-                loadMoreButton.disabled = false;
-            }
         });
     }
 
-    // Show end of posts message
-    function showEndMessage() {
-        if (loadingIndicator) {
-            loadingIndicator.style.display = 'none';
-        }
+    // ===== LAZY LOAD IMAGES =====
+    function lazyLoadImages() {
+        const lazyImages = [].slice.call(document.querySelectorAll('img.lazy'));
         
-        if (endMessage) {
-            endMessage.style.display = 'block';
-        }
-        
-        if (loadMoreButton) {
-            loadMoreButton.style.display = 'none';
+        if ('IntersectionObserver' in window) {
+            const lazyImageObserver = new IntersectionObserver(function(entries, observer) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        const lazyImage = entry.target;
+                        
+                        // Load the image
+                        if (lazyImage.dataset.src) {
+                            lazyImage.src = lazyImage.dataset.src;
+                        }
+                        if (lazyImage.dataset.srcset) {
+                            lazyImage.srcset = lazyImage.dataset.srcset;
+                        }
+                        
+                        // Add loaded class
+                        lazyImage.classList.remove('lazy');
+                        lazyImage.classList.add('loaded');
+                        
+                        // Stop observing
+                        lazyImageObserver.unobserve(lazyImage);
+                    }
+                });
+            }, {
+                rootMargin: '50px 0px',
+                threshold: 0.1
+            });
+
+            lazyImages.forEach(function(lazyImage) {
+                lazyImageObserver.observe(lazyImage);
+            });
+        } else {
+            // Fallback for older browsers
+            lazyImages.forEach(function(lazyImage) {
+                if (lazyImage.dataset.src) {
+                    lazyImage.src = lazyImage.dataset.src;
+                }
+                if (lazyImage.dataset.srcset) {
+                    lazyImage.srcset = lazyImage.dataset.srcset;
+                }
+                lazyImage.classList.remove('lazy');
+                lazyImage.classList.add('loaded');
+            });
         }
     }
+    
+    // Initialize lazy loading
+    lazyLoadImages();
 
-    // Scroll to top functionality
-    function initScrollToTop() {
-        if (!scrollToTopBtn) return;
-
-        window.addEventListener('scroll', function() {
+    // ===== SCROLL TO TOP BUTTON =====
+    const scrollToTopBtn = document.getElementById('scrollToTop');
+    
+    if (scrollToTopBtn) {
+        function toggleScrollButton() {
             if (window.pageYOffset > 300) {
                 scrollToTopBtn.classList.add('visible');
             } else {
                 scrollToTopBtn.classList.remove('visible');
             }
-        });
-
+        }
+        
+        // Initial check
+        toggleScrollButton();
+        
+        // Listen to scroll events
+        window.addEventListener('scroll', toggleScrollButton);
+        
+        // Click handler
         scrollToTopBtn.addEventListener('click', function() {
             window.scrollTo({
                 top: 0,
@@ -188,65 +111,448 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Lazy load images with Intersection Observer
-    function initLazyLoading() {
-        if ('IntersectionObserver' in window) {
-            const imageObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const img = entry.target;
-                        if (img.dataset.src) {
-                            img.src = img.dataset.src;
-                        }
-                        if (img.dataset.srcset) {
-                            img.srcset = img.dataset.srcset;
-                        }
-                        img.classList.remove('lazy');
-                        imageObserver.unobserve(img);
-                    }
-                });
-            }, {
-                rootMargin: '50px 0px',
-                threshold: 0.1
-            });
-
-            document.querySelectorAll('img[data-src]').forEach(img => {
-                imageObserver.observe(img);
-            });
+    // ===== INFINITE SCROLL =====
+    let isLoading = false;
+    let currentPage = 1;
+    let totalPages = window.ezoix_ajax?.total_pages || 1;
+    const postsContainer = document.getElementById('posts-container');
+    const loadingIndicator = document.getElementById('infinite-scroll-loading');
+    const loadMoreBtn = document.getElementById('load-more-posts');
+    const endMessage = document.getElementById('infinite-scroll-end');
+    
+    function loadMorePosts() {
+        if (isLoading || currentPage >= totalPages) return;
+        
+        isLoading = true;
+        currentPage++;
+        
+        // Show loading indicator
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'block';
+        }
+        
+        // Disable load more button if exists
+        if (loadMoreBtn) {
+            loadMoreBtn.disabled = true;
+            loadMoreBtn.textContent = window.ezoix_ajax?.loading_text || 'Loading...';
+            loadMoreBtn.classList.add('loading');
+        }
+        
+        // Make AJAX request
+        fetch(window.ezoix_ajax.ajaxurl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                action: 'infinite_scroll_posts',
+                page: currentPage,
+                nonce: window.ezoix_ajax.nonce
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
+        .then(data => {
+            if (data === 'no_more_posts') {
+                // No more posts to load
+                if (endMessage) {
+                    endMessage.style.display = 'block';
+                }
+                if (loadMoreBtn) {
+                    loadMoreBtn.style.display = 'none';
+                }
+            } else if (postsContainer) {
+                // Add new posts to container
+                postsContainer.insertAdjacentHTML('beforeend', data);
+                
+                // Lazy load new images
+                lazyLoadImages();
+                
+                // Update load more button
+                if (loadMoreBtn && currentPage < totalPages) {
+                    loadMoreBtn.disabled = false;
+                    loadMoreBtn.textContent = 'Load More Posts';
+                    loadMoreBtn.classList.remove('loading');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error loading posts:', error);
+            
+            // Reset button state on error
+            if (loadMoreBtn) {
+                loadMoreBtn.disabled = false;
+                loadMoreBtn.textContent = 'Load More Posts';
+                loadMoreBtn.classList.remove('loading');
+            }
+            
+            // Show error message
+            if (postsContainer) {
+                postsContainer.insertAdjacentHTML('beforeend', 
+                    '<p class="error-message">Sorry, there was an error loading more posts. Please try again.</p>'
+                );
+            }
+        })
+        .finally(() => {
+            isLoading = false;
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+        });
+    }
+    
+    // Load more button click handler
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', loadMorePosts);
+    }
+    
+    // Infinite scroll on window scroll
+    function checkScroll() {
+        if (isLoading || !postsContainer || currentPage >= totalPages) return;
+        
+        const lastPost = postsContainer.lastElementChild;
+        if (!lastPost) return;
+        
+        const lastPostOffset = lastPost.offsetTop + lastPost.clientHeight;
+        const pageOffset = window.pageYOffset + window.innerHeight;
+        
+        // Load more when user is 100px from the bottom of the last post
+        if (pageOffset > lastPostOffset - 100) {
+            loadMorePosts();
         }
     }
+    
+    // Throttle scroll event for performance
+    let scrollTimeout;
+    window.addEventListener('scroll', function() {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(checkScroll, 100);
+    });
 
-    // Smooth scroll for anchor links
-    function initSmoothScroll() {
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                const href = this.getAttribute('href');
-                if (href === '#') return;
+    // ===== IMAGE ERROR HANDLING =====
+    document.addEventListener('error', function(e) {
+        if (e.target.tagName === 'IMG') {
+            const img = e.target;
+            
+            // Add error class
+            img.classList.add('image-error');
+            
+            // Replace with placeholder after a delay
+            setTimeout(() => {
+                if (img.classList.contains('image-error')) {
+                    img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200"><rect width="400" height="200" fill="%23e6f0ff"/><text x="50%" y="50%" font-family="Arial" font-size="16" fill="%230066ff" text-anchor="middle" dy=".3em">Image Not Found</text></svg>';
+                    img.style.opacity = '1';
+                }
+            }, 500);
+        }
+    }, true);
 
-                const target = document.querySelector(href);
-                if (target) {
-                    e.preventDefault();
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
+    // ===== ENHANCE ACCESSIBILITY =====
+    // Add focus styles for keyboard navigation
+    document.addEventListener('keyup', function(e) {
+        if (e.key === 'Tab') {
+            document.body.classList.add('keyboard-navigation');
+        }
+    });
+
+    document.addEventListener('mousedown', function() {
+        document.body.classList.remove('keyboard-navigation');
+    });
+
+    // ===== SMOOTH SCROLL FOR ANCHOR LINKS =====
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const href = this.getAttribute('href');
+            
+            // Skip if it's just "#"
+            if (href === '#') return;
+            
+            const target = document.querySelector(href);
+            if (target) {
+                e.preventDefault();
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+                
+                // Update URL without page reload
+                if (history.pushState) {
+                    history.pushState(null, null, href);
+                }
+            }
+        });
+    });
+
+    // ===== ENHANCE CATEGORY PAGE FUNCTIONALITY =====
+    if (document.body.classList.contains('category-page')) {
+        // Add animation to post cards on category pages
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animated');
+                }
+            });
+        }, observerOptions);
+        
+        // Observe all post cards
+        document.querySelectorAll('.post-card').forEach(card => {
+            observer.observe(card);
+        });
+    }
+
+    // ===== ENHANCE SINGLE POST READING EXPERIENCE =====
+    if (document.body.classList.contains('single-post')) {
+        // Add reading progress bar
+        const readingProgress = document.createElement('div');
+        readingProgress.className = 'reading-progress';
+        readingProgress.innerHTML = '<div class="reading-progress-bar"></div>';
+        document.body.appendChild(readingProgress);
+        
+        const readingProgressBar = readingProgress.querySelector('.reading-progress-bar');
+        
+        function updateReadingProgress() {
+            const postContent = document.querySelector('.post-content');
+            if (!postContent) return;
+            
+            const postHeight = postContent.offsetHeight;
+            const windowHeight = window.innerHeight;
+            const scrollTop = window.pageYOffset;
+            const postTop = postContent.offsetTop;
+            const postBottom = postTop + postHeight;
+            
+            // Calculate progress
+            let progress = 0;
+            if (scrollTop >= postTop) {
+                const visibleHeight = Math.min(scrollTop + windowHeight, postBottom) - postTop;
+                progress = (visibleHeight / postHeight) * 100;
+            }
+            
+            // Update progress bar
+            if (readingProgressBar) {
+                readingProgressBar.style.width = Math.min(100, progress) + '%';
+            }
+        }
+        
+        // Update progress on scroll
+        window.addEventListener('scroll', updateReadingProgress);
+        window.addEventListener('resize', updateReadingProgress);
+        
+        // Initial update
+        updateReadingProgress();
+    }
+
+    // ===== ENHANCE FORM INTERACTIONS =====
+    const commentForm = document.getElementById('commentform');
+    if (commentForm) {
+        // Add focus effects to form fields
+        const formFields = commentForm.querySelectorAll('input, textarea, select');
+        formFields.forEach(field => {
+            field.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            field.addEventListener('blur', function() {
+                if (!this.value) {
+                    this.parentElement.classList.remove('focused');
                 }
             });
         });
     }
 
-    // Initialize all functionality
-    initInfiniteScroll();
-    initScrollToTop();
-    initLazyLoading();
-    initSmoothScroll();
+    // ===== PERFORMANCE MONITORING (DEV ONLY) =====
+    if (window.ezoix_ajax && window.performance) {
+        // Log performance metrics in development
+        const perfEntries = performance.getEntriesByType('navigation');
+        if (perfEntries.length > 0) {
+            const navTiming = perfEntries[0];
+            console.log('Page Load Time:', navTiming.loadEventEnd - navTiming.startTime, 'ms');
+            console.log('DOM Content Loaded:', navTiming.domContentLoadedEventEnd - navTiming.startTime, 'ms');
+        }
+    }
 
-    // Performance monitoring
-    if (window.performance) {
-        window.addEventListener('load', function() {
-            const perfData = window.performance.timing;
-            const loadTime = perfData.loadEventEnd - perfData.navigationStart;
-            console.log('Page load time:', loadTime + 'ms');
+    // ===== POLYFILLS FOR OLDER BROWSERS =====
+    // NodeList.forEach polyfill
+    if (window.NodeList && !NodeList.prototype.forEach) {
+        NodeList.prototype.forEach = function(callback, thisArg) {
+            thisArg = thisArg || window;
+            for (var i = 0; i < this.length; i++) {
+                callback.call(thisArg, this[i], i, this);
+            }
+        };
+    }
+
+    // Object.assign polyfill
+    if (typeof Object.assign != 'function') {
+        Object.assign = function(target) {
+            if (target == null) {
+                throw new TypeError('Cannot convert undefined or null to object');
+            }
+
+            target = Object(target);
+            for (var index = 1; index < arguments.length; index++) {
+                var source = arguments[index];
+                if (source != null) {
+                    for (var key in source) {
+                        if (Object.prototype.hasOwnProperty.call(source, key)) {
+                            target[key] = source[key];
+                        }
+                    }
+                }
+            }
+            return target;
+        };
+    }
+});
+
+// ===== LOAD EVENT HANDLERS =====
+window.addEventListener('load', function() {
+    // Ensure all lazy images are loaded
+    const lazyImages = document.querySelectorAll('img.lazy');
+    lazyImages.forEach(img => {
+        if (!img.classList.contains('loaded')) {
+            if (img.dataset.src) {
+                img.src = img.dataset.src;
+            }
+            img.classList.add('loaded');
+        }
+    });
+    
+    // Add loaded class to body for CSS transitions
+    document.body.classList.add('loaded');
+    
+    // Initialize any third-party scripts if needed
+    if (typeof initializeThirdPartyScripts === 'function') {
+        initializeThirdPartyScripts();
+    }
+});
+
+// ===== RESIZE EVENT HANDLER (DEBOUNCED) =====
+let resizeTimeout;
+window.addEventListener('resize', function() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(function() {
+        // Handle responsive adjustments here
+        const viewportWidth = window.innerWidth;
+        
+        // You can add responsive JS logic here if needed
+        if (viewportWidth < 768) {
+            // Mobile-specific adjustments
+        } else if (viewportWidth < 992) {
+            // Tablet-specific adjustments
+        } else {
+            // Desktop adjustments
+        }
+    }, 250);
+});
+// Mobile Device Template Interactivity
+document.addEventListener('DOMContentLoaded', function() {
+    // Gallery image switching
+    const galleryThumbs = document.querySelectorAll('.gallery-thumb');
+    const mainGalleryImage = document.getElementById('main-gallery-image');
+    
+    if (galleryThumbs.length && mainGalleryImage) {
+        galleryThumbs.forEach(thumb => {
+            thumb.addEventListener('click', function() {
+                const fullImage = this.getAttribute('data-full');
+                mainGalleryImage.src = fullImage;
+                mainGalleryImage.alt = this.alt;
+                
+                // Update active state
+                galleryThumbs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
         });
     }
+    
+    // Accordion functionality
+    const accordionToggles = document.querySelectorAll('.accordion-toggle');
+    const expandAllBtn = document.querySelector('.expand-all');
+    
+    accordionToggles.forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const content = this.closest('.spec-category').querySelector('.category-content');
+            const isExpanded = content.style.display === 'block';
+            
+            // Toggle content
+            content.style.display = isExpanded ? 'none' : 'block';
+            
+            // Update toggle icon
+            const icon = this.querySelector('.toggle-icon');
+            icon.textContent = isExpanded ? '+' : '−';
+            
+            // Update aria attribute
+            this.setAttribute('aria-expanded', !isExpanded);
+        });
+    });
+    
+    // Expand/Collapse All button
+    if (expandAllBtn) {
+        expandAllBtn.addEventListener('click', function() {
+            const allContents = document.querySelectorAll('.category-content');
+            const isAllExpanded = Array.from(allContents).every(content => 
+                content.style.display === 'block' || content.style.display === ''
+            );
+            
+            allContents.forEach(content => {
+                content.style.display = isAllExpanded ? 'none' : 'block';
+            });
+            
+            accordionToggles.forEach(toggle => {
+                const icon = toggle.querySelector('.toggle-icon');
+                icon.textContent = isAllExpanded ? '+' : '−';
+                toggle.setAttribute('aria-expanded', !isAllExpanded);
+            });
+            
+            this.textContent = isAllExpanded ? 'Expand All' : 'Collapse All';
+        });
+    }
+    
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const targetId = this.getAttribute('href');
+            if (targetId !== '#') {
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    e.preventDefault();
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        });
+    });
+    
+    // Share button enhancements
+    document.querySelectorAll('.share-button').forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (this.classList.contains('email')) {
+                // Email opens in default client, no need for window.open
+                return;
+            }
+            
+            e.preventDefault();
+            const url = this.href;
+            const width = 600;
+            const height = 400;
+            const left = (window.innerWidth - width) / 2;
+            const top = (window.innerHeight - height) / 2;
+            
+            window.open(
+                url,
+                'share',
+                `width=${width},height=${height},left=${left},top=${top},toolbar=0,status=0`
+            );
+        });
+    });
 });

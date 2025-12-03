@@ -31,7 +31,8 @@
                     <?php 
                     the_post_thumbnail('featured-image', array(
                         'loading' => 'eager',
-                        'alt' => get_the_title()
+                        'alt' => get_the_title(),
+                        'class' => 'ezoix-critical'
                     )); 
                     ?>
                 </div>
@@ -49,7 +50,7 @@
                                 <?php 
                                 $specs = get_field('specifications');
                                 foreach ($specs as $spec) : ?>
-                                <li><span class="spec-label"><?php echo $spec['label']; ?>:</span> <?php echo $spec['value']; ?></li>
+                                <li><span class="spec-label"><?php echo esc_html($spec['label']); ?>:</span> <?php echo esc_html($spec['value']); ?></li>
                                 <?php endforeach; ?>
                             </ul>
                         </div>
@@ -64,7 +65,7 @@
                                     <?php 
                                     $pros = get_field('pros');
                                     foreach ($pros as $pro) : ?>
-                                    <li><?php echo $pro['item']; ?></li>
+                                    <li><?php echo esc_html($pro['item']); ?></li>
                                     <?php endforeach; ?>
                                 </ul>
                             </div>
@@ -77,7 +78,7 @@
                                     <?php 
                                     $cons = get_field('cons');
                                     foreach ($cons as $con) : ?>
-                                    <li><?php echo $con['item']; ?></li>
+                                    <li><?php echo esc_html($con['item']); ?></li>
                                     <?php endforeach; ?>
                                 </ul>
                             </div>
@@ -105,23 +106,16 @@
                                 }
                                 ?>
                             </div>
-                            <div class="rating-value"><?php echo $rating; ?>/5</div>
+                            <div class="rating-value"><?php echo esc_html($rating); ?>/5</div>
                         </div>
                         <?php endif; ?>
                         
                         <?php if (get_field('affiliate_link')) : ?>
                         <div class="cta-buttons">
-                            <a href="<?php the_field('affiliate_link'); ?>" class="cta-button" target="_blank" rel="noopener">Buy Now</a>
-                            <a href="#" class="cta-button secondary">More Info</a>
+                            <a href="<?php echo esc_url(get_field('affiliate_link')); ?>" class="cta-button" target="_blank" rel="noopener nofollow">Buy Now</a>
+                            <a href="#specifications" class="cta-button secondary">More Info</a>
                         </div>
                         <?php endif; ?>
-                    <?php endif; ?>
-                    
-                    <!-- Tags -->
-                    <?php if (has_tag()) : ?>
-                    <div class="post-tags">
-                        <strong>Tags:</strong> <?php the_tags('', ', ', ''); ?>
-                    </div>
                     <?php endif; ?>
                 </div>
             </article>
@@ -140,7 +134,7 @@
                     'post__not_in' => array(get_the_ID()),
                     'posts_per_page' => 3,
                     'orderby' => 'rand',
-                    'no_found_rows' => true, // Improve performance
+                    'no_found_rows' => true,
                     'update_post_meta_cache' => false,
                     'update_post_term_cache' => false,
                 ));
@@ -159,11 +153,15 @@
                         <div class="post-thumbnail">
                             <a href="<?php the_permalink(); ?>">
                                 <?php 
-                                the_post_thumbnail('desktop-thumbnail', array(
-                                    'loading' => 'lazy',
-                                    'alt' => get_the_title()
-                                )); 
+                                $thumbnail_url = get_the_post_thumbnail_url(get_the_ID(), 'desktop-thumbnail');
                                 ?>
+                                <img 
+                                    data-src="<?php echo esc_url($thumbnail_url); ?>" 
+                                    src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" 
+                                    alt="<?php the_title_attribute(); ?>" 
+                                    loading="lazy" 
+                                    class="lazy"
+                                >
                             </a>
                         </div>
                         <?php endif; ?>
@@ -196,4 +194,4 @@
     </div>
 </div>
 
-<?php get_footer(); ?>  
+<?php get_footer(); ?>

@@ -1,0 +1,87 @@
+/* Block Styles for Gutenberg */
+.wp-block {
+    max-width: 1200px;
+}
+
+.wp-block[data-align="wide"] {
+    max-width: 1400px;
+}
+
+.wp-block[data-align="full"] {
+    max-width: none;
+}
+
+/* Style Gutenberg blocks to match theme */
+.wp-block-image img {
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.wp-block-gallery .blocks-gallery-item img {
+    border-radius: var(--radius);
+}
+
+.wp-block-quote {
+    border-left: 4px solid var(--primary-blue);
+    padding-left: 20px;
+    font-style: italic;
+    margin: 2em 0;
+}
+
+.wp-block-pullquote {
+    border-top: 4px solid var(--primary-blue);
+    border-bottom: 4px solid var(--primary-blue);
+    padding: 2em 0;
+    text-align: center;
+}
+
+.wp-block-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.wp-block-table td,
+.wp-block-table th {
+    padding: 12px;
+    border: 1px solid var(--border-light);
+}
+
+.wp-block-table th {
+    background-color: var(--background-light);
+    font-weight: 600;
+}
+
+.wp-block-button .wp-block-button__link {
+    background-color: var(--primary-blue);
+    color: white;
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.wp-block-button .wp-block-button__link:hover {
+    background-color: var(--primary-blue-dark);
+}
+
+.wp-block-separator {
+    border: none;
+    border-top: 2px solid var(--border-light);
+    margin: 2em auto;
+}
+
+.wp-block-cover {
+    min-height: 400px;
+    border-radius: var(--radius);
+}
+
+/* Responsive blocks */
+@media (max-width: 768px) {
+    .wp-block-columns {
+        flex-direction: column;
+    }
+    
+    .wp-block-column {
+        margin-bottom: 2em;
+    }
+}
