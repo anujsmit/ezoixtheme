@@ -19,94 +19,64 @@
                 while ($feed_items->have_posts()) : $feed_items->the_post();
                     $categories = get_the_category();
             ?>
+                    <!-- Update the feed item structure in your index.php -->
                     <article class="feed-item article-item" data-type="article" data-date="<?php echo get_the_date('Y-m-d H:i:s'); ?>">
 
-                        <!-- Time Badge -->
-                        <div class="item-time">
-                            <span class="time-icon">🕒</span>
-                            <time datetime="<?php echo get_the_date('c'); ?>">
-                                <?php echo human_time_diff(get_the_time('U'), current_time('timestamp')) . ' ago'; ?>
-                            </time>
-                        </div>
-
-                        <!-- Item Header -->
-                        <div class="item-header">
-                            <div class="item-type-badge article-badge">
-                                <span class="badge-icon">📝</span>
-                                <span class="badge-text">Article</span>
-                            </div>
-                            <?php if (!empty($categories)) : ?>
-                                <span class="item-category">
-                                    <?php echo esc_html($categories[0]->name); ?>
-                                </span>
-                            <?php endif; ?>
-                        </div>
-
-                        <!-- Item Content -->
-                        <div class="item-content">
+                        <!-- Thumbnail Section -->
+                        <div class="thumbnail">
                             <?php if (has_post_thumbnail()) : ?>
                                 <div class="item-thumbnail">
                                     <a href="<?php the_permalink(); ?>">
-                                        <?php the_post_thumbnail('medium', array('loading' => 'lazy')); ?>
+                                        <?php the_post_thumbnail('thumbnail', array(
+                                            'loading' => 'lazy',
+                                            'class' => 'feed-thumbnail'
+                                        )); ?>
+                                    </a>
+                                </div>
+                            <?php else : ?>
+                                <!-- Cool placeholder when no featured image -->
+                                <div class="item-thumbnail">
+                                    <a href="<?php the_permalink(); ?>">
+                                        <!-- CSS will handle the placeholder styling -->
                                     </a>
                                 </div>
                             <?php endif; ?>
-
-                            <div class="item-details">
-                                <h2 class="item-title">
-                                    <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
-                                </h2>
-
-                                <div class="item-meta">
-                                    <!-- Article Meta -->
-                                    <span class="meta-item author-item">
-                                        <span class="meta-icon">👤</span>
-                                        <span class="meta-text">By <?php the_author(); ?></span>
-                                    </span>
-                                    <span class="meta-item read-item">
-                                        <span class="meta-icon">⏱️</span>
-                                        <span class="meta-text">
-                                            <?php
-                                            $word_count = str_word_count(strip_tags(get_the_content()));
-                                            $reading_time = ceil($word_count / 200);
-                                            echo $reading_time . ' min read';
-                                            ?>
-                                        </span>
-                                    </span>
-                                </div>
-
-                                <p class="item-excerpt">
-                                    <?php echo wp_trim_words(get_the_excerpt(), 35); ?>
-                                </p>
-
-                                <div class="item-actions">
-                                    <a href="<?php the_permalink(); ?>" class="action-button">
-                                        Read Article →
-                                    </a>
-                                    <button class="action-button share-button" data-url="<?php the_permalink(); ?>" data-title="<?php the_title_attribute(); ?>">
-                                        <span class="share-icon">📤</span> Share
-                                    </button>
-                                </div>
-                            </div>
                         </div>
 
-                        <!-- Item Footer -->
-                        <div class="item-footer">
-                            <div class="footer-left">
-                                <span class="footer-text">
-                                    <span class="footer-icon">📅</span>
-                                    Published: <?php echo get_the_date(); ?>
-                                </span>
-                            </div>
-                            <div class="footer-right">
-                                <button class="footer-action save-item" data-id="<?php the_ID(); ?>">
-                                    <span class="action-icon">💾</span>
-                                    Save
-                                </button>
-                                <button class="footer-action bookmark-item" data-id="<?php the_ID(); ?>">
-                                    <span class="action-icon">🔖</span>
-                                    Bookmark
-                                </button>
+                        <!-- Content Section -->
+                        <div class="item-details">
+                            <h2 class="item-title">
+                                <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+                            </h2>
+
+                            <p class="item-excerpt">
+                                <?php echo wp_trim_words(get_the_excerpt(), 25); // Reduced word count 
+                                ?>
+                            </p>
+
+                            <!-- Footer inside details for better alignment -->
+                            <div class="item-footer">
+                                <div class="footer-left">
+                                    <span class="footer-text">
+                                        <span class="footer-icon">📅</span>
+                                        <?php echo get_the_date('M j, Y'); // Shorter date format 
+                                        ?>
+                                    </span>
+                                </div>
+                                <div class="footer-right">
+                                    <div class="item-meta">
+                                        <span class="meta-item read-item">
+                                            <span class="meta-icon">⏱️</span>
+                                            <span class="meta-text">
+                                                <?php
+                                                $word_count = str_word_count(strip_tags(get_the_content()));
+                                                $reading_time = ceil($word_count / 200);
+                                                echo $reading_time . ' min';
+                                                ?>
+                                            </span>
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </article>
