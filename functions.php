@@ -759,9 +759,7 @@ add_action('enqueue_block_assets', 'ezoix_block_styles');
 /**
  * Limit the number of revisions
  */
-function ezoix_limit_revisions($num, $post)
-{
-}
+function ezoix_limit_revisions($num, $post) {}
 add_filter('wp_revisions_to_keep', 'ezoix_limit_revisions', 10, 2);
 
 /**
@@ -947,7 +945,8 @@ function ezoix_mobile_device_template_redirect()
 }
 add_action('template_redirect', 'ezoix_mobile_device_template_redirect');
 
-function ezoix_include_cpt_in_category_archive($query) {
+function ezoix_include_cpt_in_category_archive($query)
+{
     // Only target the main query on the front-end
     if (is_admin() || !$query->is_main_query()) {
         return;
@@ -955,7 +954,7 @@ function ezoix_include_cpt_in_category_archive($query) {
 
     // Check if it's a standard WordPress category archive page
     if ($query->is_category()) {
-        
+
         // Get the current post types being queried (default is 'post')
         $post_types = $query->get('post_type');
 
@@ -965,7 +964,7 @@ function ezoix_include_cpt_in_category_archive($query) {
         } elseif (!is_array($post_types)) {
             $post_types = array($post_types);
         }
-        
+
         // Add the 'mobile_device' CPT to the list
         if (!in_array('mobile_device', $post_types)) {
             $post_types[] = 'mobile_device';
@@ -2555,29 +2554,30 @@ add_action('admin_notices', 'ezoix_force_flush_now');
 /**
  * Auto-create brand category when mobile device is saved (Original code)
  */
-function ezoix_auto_create_brand_category($post_id, $post, $update) {
+function ezoix_auto_create_brand_category($post_id, $post, $update)
+{
     if ($post->post_type !== 'mobile_device') {
         return;
     }
-    
+
     if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
         return;
     }
-    
+
     if (!current_user_can('edit_post', $post_id)) {
         return;
     }
-    
+
     $device_name = get_field('device_name', $post_id);
     if (!$device_name) {
         $device_name = $post->post_title;
     }
-    
+
     $brand_name = ezoix_extract_brand_from_name($device_name);
-    
+
     if ($brand_name && $brand_name !== 'Other') {
         $brand_term = term_exists($brand_name, 'mobile_brand');
-        
+
         if (!$brand_term) {
             $brand_term = wp_insert_term(
                 $brand_name,
@@ -2588,12 +2588,12 @@ function ezoix_auto_create_brand_category($post_id, $post, $update) {
                 )
             );
         }
-        
+
         if (!is_wp_error($brand_term)) {
             $term_id = is_array($brand_term) ? $brand_term['term_id'] : $brand_term;
-            
+
             $current_brands = wp_get_post_terms($post_id, 'mobile_brand', array('fields' => 'ids'));
-            
+
             if (!in_array($term_id, $current_brands)) {
                 wp_set_post_terms($post_id, array($term_id), 'mobile_brand', true);
             }
@@ -2605,7 +2605,8 @@ add_action('save_post_mobile_device', 'ezoix_auto_create_brand_category', 20, 3)
 /**
  * Enhanced brand extraction with more brands (Original code)
  */
-function ezoix_extract_brand_from_name($device_name) {
+function ezoix_extract_brand_from_name($device_name)
+{
     $brands = array(
         'Samsung',
         'Apple',
@@ -2646,35 +2647,36 @@ function ezoix_extract_brand_from_name($device_name) {
         'Panasonic',
         'Kyocera'
     );
-    
-    usort($brands, function($a, $b) {
+
+    usort($brands, function ($a, $b) {
         return strlen($b) - strlen($a);
     });
-    
+
     foreach ($brands as $brand) {
         if (stripos($device_name, $brand) !== false) {
             return $brand;
         }
     }
-    
+
     $words = explode(' ', $device_name);
     if (!empty($words[0]) && strlen($words[0]) > 2) {
         return ucfirst($words[0]);
     }
-    
+
     return 'Other';
 }
 
 /**
  * Add rewrite rules for mobile brand archives (Original code)
  */
-function ezoix_fix_brand_archive_rewrites() {
+function ezoix_fix_brand_archive_rewrites()
+{
     add_rewrite_rule(
         '^mobile-brand/([^/]+)/page/([0-9]{1,})/?$',
         'index.php?mobile_brand=$matches[1]&paged=$matches[2]',
         'top'
     );
-    
+
     add_rewrite_rule(
         '^mobile-brand/([^/]+)/?$',
         'index.php?mobile_brand=$matches[1]',
@@ -2686,7 +2688,8 @@ add_action('init', 'ezoix_fix_brand_archive_rewrites', 20);
 /**
  * Template redirect for brand archives (Original code)
  */
-function ezoix_mobile_brand_template_redirect() {
+function ezoix_mobile_brand_template_redirect()
+{
     if (is_tax('mobile_brand')) {
         $template = locate_template(array('archive-mobile-brand.php'));
         if ($template) {
@@ -2700,15 +2703,16 @@ add_action('template_redirect', 'ezoix_mobile_brand_template_redirect', 10);
 /**
  * Auto-populate brand field when creating mobile device (Original code)
  */
-function ezoix_auto_populate_brand_field($post_id) {
+function ezoix_auto_populate_brand_field($post_id)
+{
     if (get_post_type($post_id) !== 'mobile_device' || wp_is_post_revision($post_id)) {
         return;
     }
-    
+
     $device_name = get_the_title($post_id);
-    
+
     $brand_name = ezoix_extract_brand_from_name($device_name);
-    
+
     if ($brand_name && $brand_name !== 'Other') {
         if (function_exists('update_field')) {
             $current_model = get_field('device_model', $post_id);
@@ -2718,7 +2722,7 @@ function ezoix_auto_populate_brand_field($post_id) {
                 update_field('device_model', $model, $post_id);
             }
         }
-        
+
         $brand_term = term_exists($brand_name, 'mobile_brand');
         if (!$brand_term) {
             $brand_term = wp_insert_term(
@@ -2730,7 +2734,7 @@ function ezoix_auto_populate_brand_field($post_id) {
                 )
             );
         }
-        
+
         if (!is_wp_error($brand_term)) {
             $term_id = is_array($brand_term) ? $brand_term['term_id'] : $brand_term;
             wp_set_post_terms($post_id, array($term_id), 'mobile_brand', false);
@@ -2743,28 +2747,29 @@ add_action('wp_insert_post', 'ezoix_auto_populate_brand_field', 20, 1);
 /**
  * Load correct archive templates for mobile taxonomies (Original code)
  */
-function ezoix_mobile_archive_templates($template) {
+function ezoix_mobile_archive_templates($template)
+{
     if (is_tax('mobile_brand')) {
         $new_template = locate_template('archive-mobile-brand.php');
         if ($new_template) {
             return $new_template;
         }
     }
-    
+
     if (is_tax('mobile_category')) {
         $new_template = locate_template('archive-mobile-category.php');
         if ($new_template) {
             return $new_template;
         }
     }
-    
+
     if (is_post_type_archive('mobile_device')) {
         $new_template = locate_template('archive-mobile-device.php');
         if ($new_template) {
             return $new_template;
         }
     }
-    
+
     return $template;
 }
 add_filter('template_include', 'ezoix_mobile_archive_templates', 99);
