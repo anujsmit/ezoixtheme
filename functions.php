@@ -906,7 +906,7 @@ function ezoix_register_mobile_device_cpt()
         'label'                 => __('Mobile Device', 'ezoix'),
         'description'           => __('Mobile device specifications', 'ezoix'),
         'labels'                => $labels,
-        'supports'              => array('title', 'editor', 'thumbnail', 'excerpt', 'revisions'),
+        'supports'              => array('title', 'editor', 'thumbnail', 'excerpt', 'revisions', 'post-tags'),
         'taxonomies'            => array('mobile_category', 'mobile_brand'),
         'hierarchical'          => false,
         'public'                => true,
@@ -1642,7 +1642,9 @@ function ezoix_process_mobile_json($json_content)
         'specifications' => array(),
         'affiliate_links' => array(),
         'pros' => array(),
-        'cons' => array()
+        'cons' => array(),
+        'tags' => isset($specs_data['tags']) ? (is_array($specs_data['tags']) ? array_map('sanitize_text_field', $specs_data['tags']) : sanitize_text_field($specs_data['tags'])) : array(),
+        'meta_description' => isset($specs_data['meta_description']) ? sanitize_text_field($specs_data['meta_description']) : '',
     );
 
     if (isset($specs_data['specifications']) && is_array($specs_data['specifications'])) {
@@ -1706,9 +1708,8 @@ function ezoix_process_mobile_json($json_content)
 
     return $structured_data;
 }
-
 /**
- * Enhanced JSON Import with better error handling (Original code)
+ * Enhanced JSON Import with better error handling
  */
 function ezoix_import_mobile_json($json_content, $create_post = true)
 {
@@ -1764,6 +1765,52 @@ function ezoix_import_mobile_json($json_content, $create_post = true)
                     'pros' => $specs_data['pros'],
                     'cons' => $specs_data['cons']
                 ), $post_id);
+            }
+
+            // ---------------------------
+            // Moved the tags and meta description logic inside this block
+            // ---------------------------
+            
+            if (!empty($specs_data['tags'])) {
+                // Automatically set the tags
+                wp_set_post_tags($post_id, $specs_data['tags'], false);
+            }
+
+            // --- NEW LOGIC FOR META DESCRIPTION ---
+            $meta_desc_value = '';
+            if (!empty($specs_data['meta_description'])) {
+                // Use the description from JSON
+                $meta_desc_value = $specs_data['meta_description'];
+            } else {
+                // Auto-generate a meta description if not provided in JSON
+                $brand = ezoix_extract_brand_from_name($specs_data['device_name']);
+                $price = $specs_data['device_price'];
+                $model = $specs_data['device_model'];
+
+                // Try to find a display spec for a better description
+                $display_spec = '';
+                if (isset($specs_data['specifications'])) {
+                    foreach ($specs_data['specifications'] as $category_item) {
+                        if (strtolower($category_item['category']) === 'display' && !empty($category_item['items'][0]['value'])) {
+                            $display_spec = ' with a ' . $category_item['items'][0]['value'] . ' display';
+                            break;
+                        }
+                    }
+                }
+
+                $meta_desc_value = "Check out the full specifications and review for the " . esc_html($specs_data['device_name']) . " (" . esc_html($model) . "). Get details on the " . esc_html($brand) . " flagship" . $display_spec . ". Priced at " . esc_html($price) . ".";
+
+                // Trim to standard meta description length (155-160 characters)
+                $meta_desc_value = substr($meta_desc_value, 0, 160);
+            }
+            update_field('seo_meta_description', $meta_desc_value, $post_id);
+
+            // 2. ALSO save to the post excerpt, which is often used as a fallback by SEO plugins
+            if (!empty($meta_desc_value)) {
+                wp_update_post(array(
+                    'ID'           => $post_id,
+                    'post_excerpt' => $meta_desc_value,
+                ));
             }
 
             $brand = ezoix_extract_brand_from_name($specs_data['device_name']);
@@ -2193,6 +2240,14 @@ function ezoix_json_upload_shortcode()
     "model": "SM-S928",
     "release_date": "2024-01-15",
     "price": "$1299",
+    "tags": [
+    "Samsung S25",
+    "Snapdragon 8 Gen 3",
+    "200MP Camera",
+    "Flagship 2024"
+  ],
+
+  
     "specifications": {
         "display": {
             "size": "6.8 inches",

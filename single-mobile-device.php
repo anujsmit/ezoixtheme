@@ -155,96 +155,6 @@ get_header(); ?>
             </main>
 
             <aside class="device-sidebar">
-                <?php
-                // All sidebar widgets remain functional, fetching their respective ACF fields.
-                ?>
-                <?php if (function_exists('get_field') && get_field('device_rating')) : ?>
-                    <div class="rating-widget sidebar-widget">
-                        <h3 class="widget-title">Our Rating</h3>
-                        <div class="rating-score">
-                            <span class="score"><?php echo number_format(get_field('device_rating') / 2, 1); ?>/5</span>
-                            <div class="stars">
-                                <?php
-                                $rating = get_field('device_rating');
-                                $full_stars = floor($rating / 2);
-                                $half_star = ($rating / 2) - $full_stars >= 0.5;
-                                for ($i = 1; $i <= 5; $i++) :
-                                    if ($i <= $full_stars) {
-                                        echo '<span class="star full">★</span>';
-                                    } elseif ($i == $full_stars + 1 && $half_star) {
-                                        echo '<span class="star half">★</span>';
-                                    } else {
-                                        echo '<span class="star empty">★</span>';
-                                    }
-                                endfor;
-                                ?>
-                            </div>
-                            <div class="rating-bar">
-                                <div class="bar-fill" style="width: <?php echo ($rating / 10) * 100; ?>%"></div>
-                            </div>
-                        </div>
-                    </div>
-                <?php endif; ?>
-
-                <?php if (function_exists('get_field') && get_field('device_price')) : ?>
-                    <div class="price-widget sidebar-widget">
-                        <h3 class="widget-title">Price</h3>
-                        <div class="price-value"><?php echo esc_html(get_field('device_price')); ?></div>
-                        <p class="price-note">Official price at launch</p>
-                    </div>
-                <?php endif; ?>
-
-                <?php if (function_exists('get_field') && get_field('release_date')) : ?>
-                    <div class="release-widget sidebar-widget">
-                        <h3 class="widget-title">Release Date</h3>
-                        <div class="release-date"><?php echo esc_html(get_field('release_date')); ?></div>
-                    </div>
-                <?php endif; ?>
-
-                <?php if (function_exists('get_field') && get_field('device_status')) : ?>
-                    <div class="status-widget sidebar-widget">
-                        <h3 class="widget-title">Status</h3>
-                        <div class="status-badge status-<?php echo esc_attr(get_field('device_status')); ?>">
-                            <?php
-                            $status = get_field('device_status');
-                            $status_labels = array(
-                                'available' => 'Available',
-                                'upcoming' => 'Upcoming',
-                                'discontinued' => 'Discontinued',
-                                'rumored' => 'Rumored'
-                            );
-                            echo isset($status_labels[$status]) ? $status_labels[$status] : ucfirst($status);
-                            ?>
-                        </div>
-                    </div>
-                <?php endif; ?>
-
-                <div class="share-widget sidebar-widget">
-                    <h3 class="widget-title">Share This Device</h3>
-                    <div class="share-buttons">
-                        <a href="https://www.facebook.com/sharer/sharer.php?u=<?php echo urlencode(get_permalink()); ?>"
-                            target="_blank" class="share-button facebook" title="Share on Facebook">
-                            <span class="icon">f</span>
-                            <span class="label">Facebook</span>
-                        </a>
-                        <a href="https://twitter.com/intent/tweet?url=<?php echo urlencode(get_permalink()); ?>&text=<?php echo urlencode(get_the_title()); ?>"
-                            target="_blank" class="share-button twitter" title="Share on Twitter">
-                            <span class="icon">𝕏</span>
-                            <span class="label">Twitter</span>
-                        </a>
-                        <a href="https://api.whatsapp.com/send?text=<?php echo urlencode(get_the_title() . ' ' . get_permalink()); ?>"
-                            target="_blank" class="share-button whatsapp" title="Share on WhatsApp">
-                            <span class="icon">WhatsApp</span>
-                            <span class="label">WhatsApp</span>
-                        </a>
-                        <a href="mailto:?subject=<?php echo rawurlencode(get_the_title()); ?>&body=<?php echo rawurlencode(get_permalink()); ?>"
-                            class="share-button email" title="Share via Email">
-                            <span class="icon">✉</span>
-                            <span class="label">Email</span>
-                        </a>
-                    </div>
-                </div>
-
                 <?php if (function_exists('get_field') && get_field('affiliate_links')) : ?>
                     <div class="cta-widget sidebar-widget">
                         <h3 class="widget-title">Ready to Buy?</h3>
@@ -254,12 +164,16 @@ get_header(); ?>
                         $first_link = reset($affiliate_links);
                         if ($first_link) :
                         ?>
+
                             <a href="<?php echo esc_url($first_link['url']); ?>"
                                 class="cta-button"
                                 target="_blank"
                                 rel="nofollow noopener">
-                                <span class="cta-icon">🛒</span>
-                                <span>Buy Now</span>
+                                <button class="buynow">
+
+                                    <span class="cta-icon">🛒</span>
+                                    <span>Buy Now</span>
+                                </button>
                             </a>
                         <?php endif; ?>
                     </div>

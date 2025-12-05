@@ -1,7 +1,4 @@
 <?php
-/**
- * Register ACF Fields for Mobile Device Custom Post Type
- */
 
 if (function_exists('acf_add_local_field_group')):
 
@@ -34,6 +31,15 @@ if (function_exists('acf_add_local_field_group')):
                 'name' => 'device_price',
                 'type' => 'text',
                 'append' => 'USD',
+            ),
+            array(
+                'key' => 'field_seo_meta_description',
+                'label' => 'SEO Meta Description',
+                'name' => 'seo_meta_description', 
+                'type' => 'textarea',
+                'rows' => 2,
+                'new_lines' => '',
+                'instructions' => 'Automatically generated from JSON or specs.',
             ),
             array(
                 'key' => 'field_device_status',
