@@ -80,8 +80,9 @@ function ezoix_theme_scripts()
     }
 
     $total_pages = 1;
-    if (is_front_page()) {
-        $total_pages = ezoix_get_total_pages();
+    // Calculate total pages only on the home page for performance
+    if (is_front_page() || is_home()) {
+        $total_pages = ezoix_get_total_pages_for_merged_feed();
     }
 
     wp_localize_script('ezoix-script', 'ezoix_ajax', array(
@@ -217,8 +218,10 @@ function ezoix_cache_featured_posts($number = 2)
     $posts = get_transient($cache_key);
 
     if (false === $posts) {
+        // Query both posts and mobile devices for featured section
         $posts = new WP_Query(array(
             'posts_per_page' => $number,
+            'post_type' => array('post', 'mobile_device'), // Include mobile devices here too
             'meta_query'     => array(
                 array(
                     'key'     => 'featured_post',
@@ -284,7 +287,7 @@ function ezoix_add_featured_meta_box()
         'ezoix_featured_meta',
         __('Featured Post', 'ezoix'),
         'ezoix_featured_meta_callback',
-        'post',
+        array('post', 'mobile_device'), // Allow both post types to be featured
         'side',
         'default'
     );
@@ -298,7 +301,7 @@ function ezoix_featured_meta_callback($post)
     echo '<label for="featured_post">';
     echo '<input type="checkbox" id="featured_post" name="featured_post" value="1" ' . checked($featured, 1, false) . ' />';
     echo ' ' . __('Mark as featured post', 'ezoix') . '</label>';
-    echo '<p class="description">' . __('Featured posts will appear in the "Trending Now" section.', 'ezoix') . '</p>';
+    echo '<p class="description">' . __('Featured items will appear in the "Trending Now" section.', 'ezoix') . '</p>';
 }
 
 function ezoix_save_featured_meta($post_id)
@@ -315,7 +318,12 @@ function ezoix_save_featured_meta($post_id)
         return;
     }
 
-    if (isset($_POST['post_type']) && 'post' == $_POST['post_type']) {
+    if (isset($_POST['post_type'])) {
+        $post_type = $_POST['post_type'];
+        if (! in_array($post_type, array('post', 'mobile_device'))) {
+            return;
+        }
+
         if (! current_user_can('edit_post', $post_id)) {
             return;
         }
@@ -654,24 +662,62 @@ function ezoix_fix_category_pagination($query)
 add_action('pre_get_posts', 'ezoix_fix_category_pagination');
 
 /**
- * Get total pages count for infinite scroll
+ * New function to include Mobile Devices CPT on the main home/index page query.
  */
-function ezoix_get_total_pages()
+function ezoix_include_cpt_on_home($query) {
+    // Check if it's the main query and the home page (or posts page)
+    if ( ! is_admin() && $query->is_main_query() && ($query->is_home() || $query->is_front_page()) ) {
+        
+        // Get the current post types
+        $post_types = (array) $query->get('post_type');
+
+        // Ensure both 'post' and 'mobile_device' are included
+        if (empty($post_types) || (count($post_types) === 1 && $post_types[0] === 'post')) {
+            $query->set('post_type', array('post', 'mobile_device'));
+        } elseif (!in_array('mobile_device', $post_types)) {
+            $post_types[] = 'mobile_device';
+            $query->set('post_type', $post_types);
+        }
+    }
+}
+// Add to pre_get_posts hook
+add_action('pre_get_posts', 'ezoix_include_cpt_on_home');
+
+
+/**
+ * Get total pages count for infinite scroll for the merged feed.
+ */
+function ezoix_get_total_pages_for_merged_feed()
 {
     $posts_per_page = 10;
+    
+    // 1. Get featured posts IDs to exclude from the main feed count
     $featured_posts = ezoix_cache_featured_posts(2);
     $exclude_ids = wp_list_pluck($featured_posts->posts, 'ID');
 
-    $total_posts = wp_count_posts();
-    $published_posts = $total_posts->publish;
+    // 2. Count ALL published posts (post and mobile_device)
+    $all_posts_query = new WP_Query(array(
+        'post_type' => array('post', 'mobile_device'),
+        'post_status' => 'publish',
+        'posts_per_page' => -1, // Get total count
+        'fields' => 'ids',
+        'no_found_rows' => false,
+        'post__not_in' => $exclude_ids,
+    ));
 
-    $remaining_posts = max(0, $published_posts - count($exclude_ids));
+    $total_posts = $all_posts_query->found_posts;
+    
+    // 3. Calculate pages
+    // The first 15 posts are loaded in the initial page load (index.php)
+    $initial_load_count = 15;
+    $remaining_posts = max(0, $total_posts - $initial_load_count);
 
-    return ceil($remaining_posts / $posts_per_page);
+    return ceil($remaining_posts / $posts_per_page) + 1; // +1 for the initial page
 }
 
 /**
- * AJAX handler for infinite scroll
+ * AJAX handler for infinite scroll - NOW MERGED TO HANDLE BOTH POST TYPES
+ * This function handles the output for the new merged feed.
  */
 function ezoix_infinite_scroll_posts()
 {
@@ -681,48 +727,113 @@ function ezoix_infinite_scroll_posts()
 
     $page = intval($_POST['page']);
     $posts_per_page = 10;
+    $offset = 15 + (($page - 1) * $posts_per_page); // Offset: 15 for initial load + posts from previous AJAX pages
 
     $featured_posts = ezoix_cache_featured_posts(2);
     $exclude_ids = wp_list_pluck($featured_posts->posts, 'ID');
 
     $query = new WP_Query(array(
+        'post_type' => array('post', 'mobile_device'), // Query both post types
         'posts_per_page' => $posts_per_page,
-        'paged' => $page,
+        'offset' => $offset, // Use offset for proper pagination with exclusion
         'post__not_in' => $exclude_ids,
         'post_status' => 'publish',
+        'orderby' => 'date',
+        'order' => 'DESC',
         'no_found_rows' => true,
-        'update_post_meta_cache' => false,
-        'update_post_term_cache' => false,
+        'update_post_meta_cache' => true,
+        'update_post_term_cache' => true,
     ));
 
     if ($query->have_posts()) :
         while ($query->have_posts()) : $query->the_post();
+            // Use the same unified structure from index.php (feed-item) for consistent display
+            // This logic is duplicated here from the newly created render_feed_item() in index.php
+            $post_type = get_post_type();
+            $categories = get_the_category();
+            
+            // Shared details
+            $permalink = get_the_permalink();
+            $title = get_the_title();
+            $date = get_the_date('M j, Y');
+            $excerpt = wp_trim_words(get_the_excerpt(), 25);
+            $word_count = str_word_count(strip_tags(get_the_content()));
+            $reading_time = ceil($word_count / 200);
+
+            // --- Post Type Specific Data ---
+            $meta_right = '';
+            $item_type_class = '';
+
+            if ($post_type === 'mobile_device') {
+                $item_type_class = ' device-item';
+                $price = function_exists('get_field') ? get_field('device_price') : '';
+                $rating = function_exists('get_field') ? get_field('device_rating') : '';
+                
+                // Prioritize Price/Rating for mobile devices
+                $meta_right = '';
+                if ($price) {
+                    $meta_right .= '<span class="meta-item price-item">💵 <span class="meta-text">' . esc_html($price) . '</span></span>';
+                }
+                if ($rating) {
+                    // Convert 10-point to 5-point for display
+                    $rating_value = number_format(floatval($rating) / 2, 1);
+                    $meta_right .= '<span class="meta-item rating-item">⭐ <span class="meta-text">' . esc_html($rating_value) . '/5</span></span>';
+                }
+
+            } else {
+                $item_type_class = ' article-item';
+                // Use reading time for standard posts
+                $meta_right = '<span class="meta-item read-item"><span class="meta-icon">⏱️</span><span class="meta-text">' . esc_html($reading_time) . ' min</span></span>';
+            }
         ?>
-            <article class="post-card-compact" data-post-id="<?php the_ID(); ?>">
-                <?php if (has_post_thumbnail()) : ?>
-                    <div class="post-thumbnail">
-                        <a href="<?php the_permalink(); ?>">
-                            <?php
-                            $thumbnail_url = get_the_post_thumbnail_url(get_the_ID(), 'desktop-thumbnail');
-                            ?>
-                            <img
-                                data-src="<?php echo esc_url($thumbnail_url); ?>"
-                                src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-                                alt="<?php the_title_attribute(); ?>"
-                                loading="lazy"
-                                class="lazy">
-                        </a>
+            <!-- Unified Feed Item for AJAX Loading -->
+            <article class="feed-item<?php echo $item_type_class; ?>" data-type="<?php echo esc_attr($post_type); ?>" data-date="<?php echo get_the_date('Y-m-d H:i:s'); ?>">
+
+                <!-- Thumbnail Section -->
+                <div class="thumbnail">
+                    <?php if (has_post_thumbnail()) : ?>
+                        <div class="item-thumbnail">
+                            <a href="<?php echo esc_url($permalink); ?>">
+                                <?php the_post_thumbnail('thumbnail', array(
+                                    'loading' => 'lazy',
+                                    'class' => 'feed-thumbnail'
+                                )); ?>
+                            </a>
+                        </div>
+                    <?php else : ?>
+                        <!-- Cool placeholder when no featured image -->
+                        <div class="item-thumbnail">
+                            <a href="<?php echo esc_url($permalink); ?>">
+                                <!-- CSS will handle the placeholder styling -->
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Content Section -->
+                <div class="item-details">
+                    <h2 class="item-title">
+                        <a href="<?php echo esc_url($permalink); ?>"><?php echo esc_html($title); ?></a>
+                    </h2>
+
+                    <p class="item-excerpt">
+                        <?php echo esc_html($excerpt); ?>
+                    </p>
+
+                    <!-- Footer inside details for better alignment -->
+                    <div class="item-footer">
+                        <div class="footer-left">
+                            <span class="footer-text">
+                                <span class="footer-icon">📅</span>
+                                <?php echo esc_html($date); ?>
+                            </span>
+                        </div>
+                        <div class="footer-right">
+                            <div class="item-meta">
+                                <?php echo $meta_right; ?>
+                            </div>
+                        </div>
                     </div>
-                <?php endif; ?>
-                <div class="post-content">
-                    <span class="post-category"><?php the_category(', '); ?></span>
-                    <h3 class="post-title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
-                    <div class="post-meta">
-                        <span class="post-date"><?php echo get_the_date(); ?></span>
-                        <span class="post-author">By <?php the_author(); ?></span>
-                    </div>
-                    <p class="post-excerpt"><?php echo wp_trim_words(get_the_excerpt(), 15); ?></p>
-                    <a href="<?php the_permalink(); ?>" class="read-more">Read More →</a>
                 </div>
             </article>
         <?php
@@ -845,6 +956,29 @@ function ezoix_schema_markup()
     }
 }
 add_action('wp_head', 'ezoix_schema_markup');
+
+/**
+ * **NEW**: Add SEO Meta Description for Taxonomy Archives (Categories, Mobile Categories)
+ * Uses the term description if available, and ensures it's stripped of HTML.
+ */
+function ezoix_add_taxonomy_meta_description() {
+    if (is_archive() && !is_post_type_archive()) {
+        $term = get_queried_object();
+
+        if ($term && !is_wp_error($term) && isset($term->description)) {
+            $description = strip_tags(term_description($term->term_id, $term->taxonomy, false));
+            $description = esc_attr(wp_trim_words($description, 30)); // Trim to ~150-160 characters
+            
+            if (!empty($description)) {
+                // Ensure no SEO plugin has already added a meta description
+                if (!did_action('wpseo_head') && !did_action('rank_math/head')) {
+                    echo '<meta name="description" content="' . $description . '">' . "\n";
+                }
+            }
+        }
+    }
+}
+add_action('wp_head', 'ezoix_add_taxonomy_meta_description');
 
 /**
  * Optimize database tables
@@ -1830,6 +1964,18 @@ function ezoix_import_mobile_json($json_content, $create_post = true)
 
     return $specs_data;
 }
+
+/**
+ * Enhanced JSON Upload with better error handling
+ * (Admin functionality is skipped for brevity, keeping only core logic)
+ */
+
+
+/**
+ * Enhanced JSON Import with better error handling
+ * (Admin functionality is skipped for brevity, keeping only core logic)
+ */
+
 
 /**
  * Enhanced Admin Page for JSON Upload (Original code)

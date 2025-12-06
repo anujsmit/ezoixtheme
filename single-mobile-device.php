@@ -46,7 +46,15 @@ get_header(); ?>
                             'discontinued' => 'Discontinued',
                             'rumored' => 'Rumored'
                         );
-                        echo '<span class="device-status status-' . esc_attr($status) . '">' . esc_html($status_labels[$status]) . '</span>';
+                        // Ensure the key is lowercase for lookup
+                        $status_key = strtolower($status);
+                        
+                        if (isset($status_labels[$status_key])) {
+                             echo '<span class="device-status status-' . esc_attr($status_key) . '">' . esc_html($status_labels[$status_key]) . '</span>';
+                        } else {
+                            // Fallback if the status is set but not defined in the labels array
+                            echo '<span class="device-status status-unknown">' . esc_html(ucfirst($status)) . '</span>';
+                        }
                     }
                     ?>
                 </div>
@@ -119,7 +127,6 @@ get_header(); ?>
                     <h2 class="section-title">Pros & Cons</h2>
                     <section class="pros-cons">
                         <div class="conti">
-
                             <div class="pros-cons-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                                 <div class="pros-section" style="padding: 20px; border-radius: 8px; background: rgba(46, 204, 113, 0.1); border-left: 4px solid var(--color-success);">
                                     <h3 style="color: var(--color-success); font-size: 18px; margin-top: 0; margin-bottom: 15px;">👍 Pros (<?php echo count($pros_cons['pros']); ?>)</h3>

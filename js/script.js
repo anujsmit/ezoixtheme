@@ -111,16 +111,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ===== INFINITE SCROLL =====
+    // ===== INFINITE SCROLL (UPDATED FOR AUTOMATIC LOADING) =====
     let isLoading = false;
     let currentPage = 1;
-    let totalPages = window.ezoix_ajax?.total_pages || 1;
-    const postsContainer = document.getElementById('posts-container');
-    const loadingIndicator = document.getElementById('infinite-scroll-loading');
-    const loadMoreBtn = document.getElementById('load-more-posts');
-    const endMessage = document.getElementById('infinite-scroll-end');
+    // Note: totalPages is set via wp_localize_script in functions.php
+    let totalPages = window.ezoix_ajax?.total_pages || 1; 
+    const postsContainer = document.getElementById('feed-container'); // Renamed from posts-container to match index.php
+    const loadingIndicator = document.getElementById('feed-loading'); // Use the ID of the loading div
+    const endMessage = document.getElementById('feed-end-message'); // Use the ID of the end message
+
+    // *FIX 1: Hide loading indicator on page load*
+    if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+    }
     
     function loadMorePosts() {
+        // *FIX 2: Stop loading if currently loading or at the end*
         if (isLoading || currentPage >= totalPages) return;
         
         isLoading = true;
@@ -131,11 +137,9 @@ document.addEventListener('DOMContentLoaded', function() {
             loadingIndicator.style.display = 'block';
         }
         
-        // Disable load more button if exists
-        if (loadMoreBtn) {
-            loadMoreBtn.disabled = true;
-            loadMoreBtn.textContent = window.ezoix_ajax?.loading_text || 'Loading...';
-            loadMoreBtn.classList.add('loading');
+        // Hide end message if it was shown previously
+        if (endMessage) {
+            endMessage.style.display = 'none';
         }
         
         // Make AJAX request
@@ -157,43 +161,28 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.text();
         })
         .then(data => {
-            if (data === 'no_more_posts') {
-                // No more posts to load
+            if (data === 'no_more_posts' || currentPage >= totalPages) {
+                // No more posts to load or reached calculated end
                 if (endMessage) {
                     endMessage.style.display = 'block';
                 }
-                if (loadMoreBtn) {
-                    loadMoreBtn.style.display = 'none';
-                }
+                // Set totalPages to current page to prevent future calls
+                totalPages = currentPage; 
             } else if (postsContainer) {
                 // Add new posts to container
                 postsContainer.insertAdjacentHTML('beforeend', data);
                 
                 // Lazy load new images
                 lazyLoadImages();
-                
-                // Update load more button
-                if (loadMoreBtn && currentPage < totalPages) {
-                    loadMoreBtn.disabled = false;
-                    loadMoreBtn.textContent = 'Load More Posts';
-                    loadMoreBtn.classList.remove('loading');
-                }
             }
         })
         .catch(error => {
             console.error('Error loading posts:', error);
             
-            // Reset button state on error
-            if (loadMoreBtn) {
-                loadMoreBtn.disabled = false;
-                loadMoreBtn.textContent = 'Load More Posts';
-                loadMoreBtn.classList.remove('loading');
-            }
-            
             // Show error message
             if (postsContainer) {
                 postsContainer.insertAdjacentHTML('beforeend', 
-                    '<p class="error-message">Sorry, there was an error loading more posts. Please try again.</p>'
+                    '<p class="error-message">Sorry, there was an error loading more content. Please try again.</p>'
                 );
             }
         })
@@ -205,23 +194,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Load more button click handler
-    if (loadMoreBtn) {
-        loadMoreBtn.addEventListener('click', loadMorePosts);
-    }
+    // *FIX 3: Removed button click handler as we are using automatic scroll*
+    // if (loadMoreBtn) {
+    //     loadMoreBtn.addEventListener('click', loadMorePosts);
+    // }
     
-    // Infinite scroll on window scroll
+    // Infinite scroll on window scroll (Existing logic is good, just ensuring it points to the right vars)
     function checkScroll() {
         if (isLoading || !postsContainer || currentPage >= totalPages) return;
         
         const lastPost = postsContainer.lastElementChild;
         if (!lastPost) return;
         
-        const lastPostOffset = lastPost.offsetTop + lastPost.clientHeight;
-        const pageOffset = window.pageYOffset + window.innerHeight;
-        
-        // Load more when user is 100px from the bottom of the last post
-        if (pageOffset > lastPostOffset - 100) {
+        // Check if the page is long enough to have content to load
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight;
+        const scrollTop = document.documentElement.scrollTop;
+
+        // Load more when user is 1000px from the bottom of the document
+        // Using document scroll heights is more reliable for infinite scroll
+        if (scrollTop + clientHeight >= scrollHeight - 1000) {
             loadMorePosts();
         }
     }
