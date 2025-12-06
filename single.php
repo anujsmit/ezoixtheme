@@ -40,7 +40,6 @@
 
                     <div class="post-content">
                         <?php the_content(); ?>
-
                         <!-- ACF Custom Fields (if used) -->
                         <?php if (function_exists('get_field')) : ?>
                             <?php if (get_field('specifications')) : ?>
