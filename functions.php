@@ -847,7 +847,60 @@ function ezoix_infinite_scroll_posts()
 }
 add_action('wp_ajax_infinite_scroll_posts', 'ezoix_infinite_scroll_posts');
 add_action('wp_ajax_nopriv_infinite_scroll_posts', 'ezoix_infinite_scroll_posts');
+/**
+ * Get similar mobile devices based on brand and category.
+ *
+ * @param int $post_id The current mobile device post ID.
+ * @param int $number The number of posts to return.
+ * @return WP_Query
+ */
+function ezoix_get_similar_mobile_devices($post_id, $number = 3) {
+    if (!$post_id || get_post_type($post_id) !== 'mobile_device') {
+        return new WP_Query(array('paged' => -1)); 
+    }
 
+    $tax_query = array('relation' => 'OR');
+    $current_brands = wp_get_post_terms($post_id, 'mobile_brand', array('fields' => 'slugs'));
+    $current_categories = wp_get_post_terms($post_id, 'mobile_category', array('fields' => 'slugs'));
+
+    // 1. Prioritize devices with the same brand(s)
+    if (!empty($current_brands)) {
+        $tax_query[] = array(
+            'taxonomy' => 'mobile_brand',
+            'field'    => 'slug',
+            'terms'    => $current_brands,
+        );
+    }
+
+    // 2. Also look for devices with matching categories
+    if (!empty($current_categories)) {
+        $tax_query[] = array(
+            'taxonomy' => 'mobile_category',
+            'field'    => 'slug',
+            'terms'    => $current_categories,
+        );
+    }
+    
+    // If no matching terms exist, stop the query
+    if (count($tax_query) === 1 && $tax_query['relation'] === 'OR') {
+        return new WP_Query(array('paged' => -1));
+    }
+
+
+    $args = array(
+        'post_type'      => 'mobile_device',
+        'post_status'    => 'publish',
+        'posts_per_page' => $number,
+        'post__not_in'   => array($post_id),
+        'orderby'        => 'rand',
+        'tax_query'      => $tax_query,
+        'no_found_rows'  => true,
+        'update_post_meta_cache' => false,
+        'update_post_term_cache' => false,
+    );
+
+    return new WP_Query($args);
+}
 /**
  * Add theme support for responsive embeds
  */
@@ -2975,3 +3028,285 @@ function ezoix_mobile_archive_templates($template)
     return $template;
 }
 add_filter('template_include', 'ezoix_mobile_archive_templates', 99);
+
+
+/**
+ * ============================================================================
+ * NEW: Device Comparison Shortcode Logic
+ * ============================================================================
+ */
+
+/**
+ * Retrieves simplified, organized specs for comparison.
+ * @param int $post_id The ID of the mobile device.
+ * @return array|null Organized specifications data.
+ */
+function ezoix_get_comparison_data($post_id) {
+    if (!$post_id || get_post_type($post_id) !== 'mobile_device' || !function_exists('get_field')) {
+        return null;
+    }
+
+    $data = array(
+        'title' => get_the_title($post_id),
+        'permalink' => get_permalink($post_id),
+        'thumbnail' => get_the_post_thumbnail($post_id, 'medium', array('class' => 'compare-thumb')),
+        'price' => get_field('device_price', $post_id),
+        'rating' => get_field('device_rating', $post_id), // 0-10 scale
+        'specs' => array()
+    );
+
+    $specifications = get_field('specifications', $post_id);
+    if ($specifications) {
+        foreach ($specifications as $category) {
+            $cat_name = esc_html($category['category']);
+            $data['specs'][$cat_name] = array();
+            
+            if (!empty($category['items'])) {
+                foreach ($category['items'] as $item) {
+                    $key = esc_html($item['key']);
+                    $value = esc_html($item['value']);
+                    // Store spec value by category and key
+                    $data['specs'][$cat_name][$key] = $value;
+                }
+            }
+        }
+    }
+
+    return $data;
+}
+
+/**
+ * Shortcode to display a comparison table between two mobile devices.
+ * Usage: [device_compare id1="123" id2="456"] or [device_compare slug1="device-a" slug2="device-b"]
+ */
+function ezoix_device_compare_shortcode($atts) {
+    if (!function_exists('get_field')) {
+        return '<p class="error">ACF plugin is required for the device comparison feature.</p>';
+    }
+    
+    $atts = shortcode_atts(array(
+        'id1' => 0,
+        'id2' => 0,
+        'slug1' => '',
+        'slug2' => '',
+    ), $atts, 'device_compare');
+
+    // Determine Post IDs
+    $id1 = $atts['id1'] ? absint($atts['id1']) : ( $atts['slug1'] ? get_page_by_path($atts['slug1'], OBJECT, 'mobile_device')->ID : 0 );
+    $id2 = $atts['id2'] ? absint($atts['id2']) : ( $atts['slug2'] ? get_page_by_path($atts['slug2'], OBJECT, 'mobile_device')->ID : 0 );
+
+    if (!$id1 || !$id2) {
+        return '<p class="error">Please provide valid IDs or slugs for two mobile devices.</p>';
+    }
+
+    $device1 = ezoix_get_comparison_data($id1);
+    $device2 = ezoix_get_comparison_data($id2);
+
+    if (!$device1 || !$device2) {
+        return '<p class="error">One or both devices could not be found or are not mobile devices.</p>';
+    }
+
+    // 1. Compile all unique categories and specifications
+    $all_categories = array_keys($device1['specs'] + $device2['specs']);
+    $comparison_data = array();
+
+    foreach ($all_categories as $cat) {
+        $specs1 = $device1['specs'][$cat] ?? array();
+        $specs2 = $device2['specs'][$cat] ?? array();
+        $all_specs = array_keys($specs1 + $specs2);
+        
+        foreach ($all_specs as $spec_key) {
+            $comparison_data[$cat][$spec_key] = array(
+                'val1' => $specs1[$spec_key] ?? 'N/A',
+                'val2' => $specs2[$spec_key] ?? 'N/A',
+            );
+        }
+    }
+    
+    // Convert 10-point rating to 5-point display
+    $rating1_display = number_format(floatval($device1['rating']) / 2, 1);
+    $rating2_display = number_format(floatval($device2['rating']) / 2, 1);
+
+    // 2. Generate HTML output
+    ob_start();
+    ?>
+    <div class="device-comparison-container">
+        <h2 class="comparison-title">Head-to-Head Comparison: <?php echo esc_html($device1['title']); ?> vs. <?php echo esc_html($device2['title']); ?></h2>
+        
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th class="spec-label-col"></th>
+                    <th class="device-col">
+                        <a href="<?php echo esc_url($device1['permalink']); ?>"><?php echo $device1['thumbnail']; ?></a>
+                        <h3 class="device-name"><a href="<?php echo esc_url($device1['permalink']); ?>"><?php echo esc_html($device1['title']); ?></a></h3>
+                    </th>
+                    <th class="device-col">
+                        <a href="<?php echo esc_url($device2['permalink']); ?>"><?php echo $device2['thumbnail']; ?></a>
+                        <h3 class="device-name"><a href="<?php echo esc_url($device2['permalink']); ?>"><?php echo esc_html($device2['title']); ?></a></h3>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="category-header">
+                    <td colspan="3"><h4 class="category-title">Quick Facts</h4></td>
+                </tr>
+                <tr class="compare-row highlight">
+                    <td class="spec-label-col">Price</td>
+                    <td class="compare-value compare-value-<?php echo sanitize_title($device1['title']); ?>"><?php echo esc_html($device1['price'] ?: 'N/A'); ?></td>
+                    <td class="compare-value compare-value-<?php echo sanitize_title($device2['title']); ?>"><?php echo esc_html($device2['price'] ?: 'N/A'); ?></td>
+                </tr>
+                <tr class="compare-row highlight">
+                    <td class="spec-label-col">Rating (5/5)</td>
+                    <td class="compare-value compare-value-<?php echo sanitize_title($device1['title']); ?>"><?php echo esc_html($rating1_display ?: 'N/A'); ?></td>
+                    <td class="compare-value compare-value-<?php echo sanitize_title($device2['title']); ?>"><?php echo esc_html($rating2_display ?: 'N/A'); ?></td>
+                </tr>
+                
+                <?php foreach ($comparison_data as $category => $specs) : ?>
+                    <tr class="category-header">
+                        <td colspan="3"><h4 class="category-title"><?php echo esc_html($category); ?></h4></td>
+                    </tr>
+                    <?php foreach ($specs as $spec_key => $values) : ?>
+                        <tr class="compare-row">
+                            <td class="spec-label-col"><?php echo esc_html($spec_key); ?></td>
+                            <td class="compare-value compare-value-<?php echo sanitize_title($device1['title']); ?>"><?php echo esc_html($values['val1']); ?></td>
+                            <td class="compare-value compare-value-<?php echo sanitize_title($device2['title']); ?>"><?php echo esc_html($values['val2']); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('device_compare', 'ezoix_device_compare_shortcode');
+/**
+ * ============================================================================
+ * NEW: Best Buy Comparison Section Logic
+ * ============================================================================
+ */
+
+/**
+ * Parses price string to a numeric value for comparison.
+ * @param string $price_string Price string (e.g., "$1299", "₹1,29,999").
+ * @return float Numeric price value, or PHP_FLOAT_MAX on failure.
+ */
+function ezoix_parse_price_for_comparison($price_string) {
+    if (empty($price_string)) {
+        return PHP_FLOAT_MAX;
+    }
+    // Remove all non-numeric characters except comma and dot
+    $numeric_string = preg_replace('/[^0-9.,]/', '', $price_string);
+    
+    // Check for European format (e.g., 1.234,56)
+    if (strpos($numeric_string, ',') !== false && strpos($numeric_string, '.') !== false && strpos($numeric_string, '.') < strpos($numeric_string, ',')) {
+        $numeric_string = str_replace('.', '', $numeric_string);
+        $numeric_string = str_replace(',', '.', $numeric_string);
+    } elseif (strpos($numeric_string, ',') !== false && strpos($numeric_string, '.') === false) {
+        // Handle large numbers with comma as thousand separator (e.g., 1,299)
+        $numeric_string = str_replace(',', '', $numeric_string);
+    }
+    
+    // Final float conversion
+    $price = floatval($numeric_string);
+    return $price > 0 ? $price : PHP_FLOAT_MAX;
+}
+
+
+/**
+ * Displays the Best Buy Comparison table for the current device.
+ * @param int $post_id The current mobile device post ID.
+ * @return string HTML output.
+ */
+function ezoix_display_best_buy_comparison($post_id = null) {
+    if (!function_exists('get_field')) {
+        return '';
+    }
+    if (!$post_id) {
+        $post_id = get_the_ID();
+    }
+
+    $affiliate_links = get_field('affiliate_links', $post_id);
+
+    if (empty($affiliate_links) || count($affiliate_links) < 2) {
+        return ''; // Only display if at least two links exist
+    }
+
+    $lowest_price = PHP_FLOAT_MAX;
+    $best_link_key = -1;
+    $comparison_links = array();
+
+    foreach ($affiliate_links as $key => $link) {
+        // Skip links without a price or URL
+        if (empty($link['url']) || empty($link['price'])) {
+            continue;
+        }
+
+        $price_numeric = ezoix_parse_price_for_comparison($link['price']);
+        
+        $comparison_links[] = array(
+            'platform' => esc_html(ucwords($link['platform'])),
+            'url'      => esc_url($link['url']),
+            'price'    => esc_html($link['price']),
+            'numeric'  => $price_numeric,
+        );
+
+        // Find the lowest price
+        if ($price_numeric < $lowest_price) {
+            $lowest_price = $price_numeric;
+            $best_link_key = count($comparison_links) - 1;
+        }
+    }
+    
+    if (count($comparison_links) < 2) {
+        return ''; // Ensure we still have at least 2 valid links after filtering
+    }
+
+    ob_start();
+    ?>
+    <section class="device-best-buy-comparison full-specifications" id="best-price">
+        <h2 class="section-title">Best Price Comparison</h2>
+        <div class="comparison-table-wrapper">
+            <table class="best-buy-table">
+                <thead>
+                    <tr>
+                        <th>Platform</th>
+                        <th>Price</th>
+                        <th class="status-col">Status</th>
+                        <th>Link</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($comparison_links as $index => $link) : 
+                        $is_best = ($index === $best_link_key);
+                        $row_class = $is_best ? 'best-price-row' : '';
+                        $price_status = $is_best ? 'Lowest Price' : '';
+                        $icon = $is_best ? '🏆' : '🛒';
+                    ?>
+                        <tr class="<?php echo $row_class; ?>">
+                            <td><span class="platform-icon"><?php echo $icon; ?></span> <?php echo $link['platform']; ?></td>
+                            <td class="price-value"><strong><?php echo $link['price']; ?></strong></td>
+                            <td class="price-status"><?php echo $price_status; ?></td>
+                            <td>
+                                <a href="<?php echo $link['url']; ?>" 
+                                   class="buy-link-button" 
+                                   target="_blank" 
+                                   rel="nofollow noopener">
+                                   Check Price →
+                                </a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php if ($best_link_key !== -1) : ?>
+            <p class="comparison-footer">
+                <span class="footer-note">Note: Prices are subject to change. The best price is currently found at **<?php echo $comparison_links[$best_link_key]['platform']; ?>**.</span>
+            </p>
+        <?php endif; ?>
+    </section>
+    <?php
+    return ob_get_clean();
+}

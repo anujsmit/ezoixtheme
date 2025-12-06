@@ -1613,3 +1613,141 @@ html {
     scroll-behavior: smooth;
     overflow-Y: scroll;
 }
+/* ========================================= */
+/* NEW: Best Buy Comparison Table Styles */
+/* ========================================= */
+.device-best-buy-comparison {
+    margin-bottom: 30px;
+    background: #e6f0ff; /* Light blue background to distinguish the section */
+    border: 1px solid var(--primary-blue-light);
+    border-radius: var(--radius);
+    padding: 20px;
+}
+
+.device-best-buy-comparison .section-title {
+    color: var(--primary-blue);
+    border-bottom: 2px solid var(--primary-blue);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 24px;
+}
+
+.best-buy-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.best-buy-table th {
+    background-color: var(--primary-blue);
+    color: white;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.best-buy-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-medium);
+    vertical-align: middle;
+    font-size: 15px;
+}
+
+.best-price-row {
+    background-color: #d4edda; /* Success green */
+    font-weight: 700;
+    border: 2px solid var(--color-success);
+}
+
+.best-price-row .price-value {
+    color: var(--color-success);
+    font-size: 18px;
+}
+
+.price-status {
+    color: var(--color-success);
+    font-weight: 600;
+}
+
+.buy-link-button {
+    display: inline-block;
+    padding: 8px 15px;
+    background: var(--primary-blue);
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: background 0.3s;
+}
+
+.buy-link-button:hover {
+    background: var(--primary-blue-dark);
+}
+
+.comparison-footer {
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-medium);
+    padding: 10px;
+    border-top: 1px solid var(--border-light);
+}
+
+/* Responsive adjustments for comparison table */
+@media (max-width: 600px) {
+    .best-buy-table, 
+    .best-buy-table thead, 
+    .best-buy-table tbody, 
+    .best-buy-table th, 
+    .best-buy-table td, 
+    .best-buy-table tr { 
+        display: block; 
+    }
+    
+    .best-buy-table thead {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+    
+    .best-buy-table tr { 
+        border: 1px solid #ccc; 
+        margin-bottom: 10px; 
+        border-radius: 8px; 
+        overflow: hidden; 
+    }
+    
+    .best-buy-table td { 
+        border: none;
+        border-bottom: 1px solid #eee; 
+        position: relative;
+        padding-left: 50%; 
+        text-align: right;
+    }
+    
+    .best-buy-table td:before { 
+        position: absolute;
+        top: 0;
+        left: 6px;
+        width: 45%; 
+        padding-right: 10px; 
+        white-space: nowrap;
+        text-align: left;
+        font-weight: 700;
+        line-height: 2.5;
+        color: var(--text-dark);
+    }
+    
+    /* Headers for mobile display */
+    .best-buy-table tr.best-price-row { border: 2px solid var(--color-success); }
+    .best-buy-table td:nth-of-type(1):before { content: "Platform"; }
+    .best-buy-table td:nth-of-type(2):before { content: "Price"; }
+    .best-buy-table td:nth-of-type(3):before { content: "Status"; }
+    .best-buy-table td:nth-of-type(4):before { content: "Link"; }
+    
+    .buy-link-button {
+        display: block;
+        text-align: center;
+    }
+}

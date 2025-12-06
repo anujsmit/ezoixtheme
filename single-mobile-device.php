@@ -2,7 +2,12 @@
 
 /**
  * Template for displaying single mobile devices - SIMPLIFIED UI
- * * This file replaces the complex gallery and accordion with a single, table-based specification layout.
+ * * Includes: 
+ * 1. Best Price Comparison (Above Content)
+ * 2. Dynamic SEO Highlights / Overview section (Above Specs)
+ * 3. Similar Devices widget (In Sidebar)
+ *
+ * @package Ezoix_Tech_Blog
  */
 
 get_header(); ?>
@@ -19,7 +24,7 @@ get_header(); ?>
                 <h1 class="device-title"><?php the_title(); ?></h1>
                 <div class="device-meta">
                     <?php
-                    // Display Brand
+
                     $brands = get_the_terms(get_the_ID(), 'mobile_brand');
                     if ($brands && !is_wp_error($brands)) :
                         echo '<span class="device-brand">';
@@ -31,13 +36,13 @@ get_header(); ?>
                         echo '</span>';
                     endif;
 
-                    // Display Model
+
                     $model = get_field('device_model');
                     if ($model) {
                         echo '<span class="device-model"><span class="meta-label">Model:</span> ' . esc_html($model) . '</span>';
                     }
 
-                    // Display Status
+
                     $status = get_field('device_status');
                     if ($status) {
                         $status_labels = array(
@@ -46,13 +51,13 @@ get_header(); ?>
                             'discontinued' => 'Discontinued',
                             'rumored' => 'Rumored'
                         );
-                        // Ensure the key is lowercase for lookup
+
                         $status_key = strtolower($status);
-                        
+
                         if (isset($status_labels[$status_key])) {
-                             echo '<span class="device-status status-' . esc_attr($status_key) . '">' . esc_html($status_labels[$status_key]) . '</span>';
+                            echo '<span class="device-status status-' . esc_attr($status_key) . '">' . esc_html($status_labels[$status_key]) . '</span>';
                         } else {
-                            // Fallback if the status is set but not defined in the labels array
+
                             echo '<span class="device-status status-unknown">' . esc_html(ucfirst($status)) . '</span>';
                         }
                     }
@@ -74,11 +79,31 @@ get_header(); ?>
                     </section>
                 <?php endif; ?>
 
-                <?php if (get_the_content()) : ?>
+                <?php
+
+                if (function_exists('ezoix_display_best_buy_comparison')) {
+                    echo ezoix_display_best_buy_comparison(get_the_ID());
+                }
+                ?>
+
+                <?php
+
+                if (get_the_content() || has_excerpt()) :
+                    $has_full_content = get_the_content();
+                    $excerpt_content = get_the_excerpt();
+                    $is_excerpt_only = !$has_full_content && $excerpt_content;
+                ?>
                     <section class="device-description full-specifications">
-                        <h2 class="section-title">Overview</h2>
+                        <h2 class="section-title"><?php echo $has_full_content ? 'Overview & Review' : 'Key Highlights'; ?></h2>
                         <div class="post-content">
-                            <?php the_content(); ?>
+                            <?php
+                            if ($has_full_content) {
+                                the_content();
+                            } elseif ($is_excerpt_only) {
+
+                                echo '<p>' . esc_html($excerpt_content) . '</p>';
+                            }
+                            ?>
                         </div>
                     </section>
                 <?php endif; ?>
@@ -162,6 +187,53 @@ get_header(); ?>
             </main>
 
             <aside class="device-sidebar">
+                <?php
+
+                if (function_exists('ezoix_get_similar_mobile_devices')) :
+                    $similar_devices = ezoix_get_similar_mobile_devices(get_the_ID(), 3);
+
+                    if ($similar_devices->have_posts()) :
+                ?>
+                        <div class="similar-devices-widget sidebar-widget">
+                            <h3 class="widget-title">Similar Devices</h3>
+                            <ul class="similar-devices-list" style="list-style: none; padding: 0; margin: 0;">
+                                <?php while ($similar_devices->have_posts()) : $similar_devices->the_post();
+                                    $price = function_exists('get_field') ? get_field('device_price') : '';
+                                ?>
+                                    <li style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed var(--border-light);">
+                                        <a href="<?php the_permalink(); ?>" style="display: flex; gap: 10px; align-items: center; color: var(--text-dark);">
+                                            <div style="flex-shrink: 0;">
+                                                <?php if (has_post_thumbnail()) : ?>
+                                                    <?php the_post_thumbnail('thumbnail', array(
+                                                        'loading' => 'lazy',
+                                                        'style' => 'width: 60px; height: 60px; object-fit: cover; border-radius: 6px;',
+                                                        'alt' => get_the_title()
+                                                    )); ?>
+                                                <?php else: ?>
+                                                    <div style="width: 60px; height: 60px; background: var(--background-light); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px;">📱</div>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div style="flex-grow: 1;">
+                                                <div style="font-weight: 600; font-size: 15px; line-height: 1.3; margin-bottom: 2px;">
+                                                    <?php the_title(); ?>
+                                                </div>
+                                                <?php if ($price) : ?>
+                                                    <div style="color: var(--primary-blue-dark); font-size: 13px; font-weight: 700;">
+                                                        <?php echo esc_html($price); ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </a>
+                                    </li>
+                                <?php endwhile;
+                                wp_reset_postdata(); ?>
+                            </ul>
+                        </div>
+                <?php
+                    endif;
+                endif;
+                ?>
+
                 <?php if (function_exists('get_field') && get_field('affiliate_links')) : ?>
                     <div class="cta-widget sidebar-widget">
                         <h3 class="widget-title">Ready to Buy?</h3>
