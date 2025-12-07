@@ -323,8 +323,10 @@ img {
 
 /* ===== INDEX.PHP FEED ITEMS ===== */
 .feed-items {
-    display: flex;
-    flex-direction: column;
+    /* display: flex;
+    flex-direction: column; */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 25px;
     width: 100%;
 }
@@ -1308,7 +1310,9 @@ img {
 
 /* Tablet */
 @media (max-width: 992px) {
-
+    .feed-items{
+        grid-template-columns: 1fr;
+    }
     .sidebar {
         position: static;
     }
@@ -1749,5 +1753,98 @@ html {
     .buy-link-button {
         display: block;
         text-align: center;
+    }
+}
+
+/*
+ * NEW ADVERTISEMENT LAYOUT & VISIBILITY CONTROLS
+ * ============================================
+ */
+
+/* 1. Base Styles for all Ad Images */
+.ad-image {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    border-radius: var(--radius);
+    transition: transform 0.3s ease;
+}
+.ad-image:hover {
+    transform: scale(1.01);
+}
+
+.ad-unit {
+    text-align: center;
+    padding: 10px 0; /* Add padding for separation */
+}
+
+/* 2. Mobile Banner Styles (Top & Bottom) - Small UI Impact */
+.mobile-ad-banner {
+    /* Use fixed max-height to ensure small UI impact, image will scale down */
+    max-height: 100px; 
+    width: 100%; 
+    object-fit: contain; /* Ensures the ad image doesn't get distorted */
+}
+
+
+/* 3. Visibility Control - Default to MOBILE (Hide Desktop Ads) */
+.ad-unit.desktop-only {
+    display: none; /* Hide left/right sidebars by default (desktop ads) */
+}
+.ad-unit.mobile-only {
+    display: block; /* Show top/bottom banners by default (mobile ads) */
+}
+
+/* 4. Mobile Layout */
+.container-index {
+    display: flex;
+    flex-direction: column; /* Stacks all elements vertically on mobile */
+    gap: 20px;
+}
+.ad-content-grid {
+    display: block; /* Content container remains a block element */
+}
+.ad-left, .ad-right {
+    order: 100; /* Ensures sidebars move to the bottom of the feed */
+}
+
+/* 5. Desktop/Tablet Layout (Screen width > 1024px) */
+@media (min-width: 1024px) {
+    
+    /* Reverse Visibility Control (Desktop) */
+    .ad-unit.desktop-only {
+        display: block; /* Show left/right sidebars */
+        padding: 0; /* Remove padding from sidebars for tight fit */
+    }
+    .ad-unit.mobile-only {
+        display: none !important; /* Hide top/bottom banners */
+    }
+    
+    /* Layout: 3-Column Grid */
+    .ad-content-grid {
+        display: grid;
+        /* Left Ad (260px), Main Content (1fr), Right Ad (260px) */
+        grid-template-columns: 260px 1fr 260px; 
+        gap: 30px;
+        width: 100%;
+    }
+    
+    /* Position elements within the grid */
+    .ad-left { grid-column: 1; }
+    .feed-items { grid-column: 2; }
+    .ad-right { grid-column: 3; }
+
+    /* Sticky Sidebars */
+    .feed-sidebar {
+        position: sticky;
+        top: 100px; /* Sticks below the header */
+        align-self: start; /* Ensures sidebars stick to the top */
+    }
+    
+    /* Ensure infinite scroll loading section aligns under the main feed */
+    .load-more-section, #feed-end-message {
+        grid-column: 2;
+        width: 100%;
     }
 }
