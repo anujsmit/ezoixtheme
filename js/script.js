@@ -194,11 +194,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // *FIX 3: Removed button click handler as we are using automatic scroll*
-    // if (loadMoreBtn) {
-    //     loadMoreBtn.addEventListener('click', loadMorePosts);
-    // }
-    
     // Infinite scroll on window scroll (Existing logic is good, just ensuring it points to the right vars)
     function checkScroll() {
         if (isLoading || !postsContainer || currentPage >= totalPages) return;
@@ -278,28 +273,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-
-    // ===== ENHANCE CATEGORY PAGE FUNCTIONALITY =====
-    if (document.body.classList.contains('category-page')) {
-        // Add animation to post cards on category pages
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-        
-        const observer = new IntersectionObserver(function(entries) {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animated');
-                }
-            });
-        }, observerOptions);
-        
-        // Observe all post cards
-        document.querySelectorAll('.post-card').forEach(card => {
-            observer.observe(card);
-        });
-    }
 
     // ===== ENHANCE SINGLE POST READING EXPERIENCE =====
     if (document.body.classList.contains('single-post')) {
@@ -444,107 +417,4 @@ window.addEventListener('resize', function() {
             // Desktop adjustments
         }
     }, 250);
-});
-// Mobile Device Template Interactivity
-document.addEventListener('DOMContentLoaded', function() {
-    // Gallery image switching
-    const galleryThumbs = document.querySelectorAll('.gallery-thumb');
-    const mainGalleryImage = document.getElementById('main-gallery-image');
-    
-    if (galleryThumbs.length && mainGalleryImage) {
-        galleryThumbs.forEach(thumb => {
-            thumb.addEventListener('click', function() {
-                const fullImage = this.getAttribute('data-full');
-                mainGalleryImage.src = fullImage;
-                mainGalleryImage.alt = this.alt;
-                
-                // Update active state
-                galleryThumbs.forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-    }
-    
-    // Accordion functionality
-    const accordionToggles = document.querySelectorAll('.accordion-toggle');
-    const expandAllBtn = document.querySelector('.expand-all');
-    
-    accordionToggles.forEach(toggle => {
-        toggle.addEventListener('click', function() {
-            const content = this.closest('.spec-category').querySelector('.category-content');
-            const isExpanded = content.style.display === 'block';
-            
-            // Toggle content
-            content.style.display = isExpanded ? 'none' : 'block';
-            
-            // Update toggle icon
-            const icon = this.querySelector('.toggle-icon');
-            icon.textContent = isExpanded ? '+' : '−';
-            
-            // Update aria attribute
-            this.setAttribute('aria-expanded', !isExpanded);
-        });
-    });
-    
-    // Expand/Collapse All button
-    if (expandAllBtn) {
-        expandAllBtn.addEventListener('click', function() {
-            const allContents = document.querySelectorAll('.category-content');
-            const isAllExpanded = Array.from(allContents).every(content => 
-                content.style.display === 'block' || content.style.display === ''
-            );
-            
-            allContents.forEach(content => {
-                content.style.display = isAllExpanded ? 'none' : 'block';
-            });
-            
-            accordionToggles.forEach(toggle => {
-                const icon = toggle.querySelector('.toggle-icon');
-                icon.textContent = isAllExpanded ? '+' : '−';
-                toggle.setAttribute('aria-expanded', !isAllExpanded);
-            });
-            
-            this.textContent = isAllExpanded ? 'Expand All' : 'Collapse All';
-        });
-    }
-    
-    // Smooth scroll for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            const targetId = this.getAttribute('href');
-            if (targetId !== '#') {
-                const targetElement = document.querySelector(targetId);
-                if (targetElement) {
-                    e.preventDefault();
-                    window.scrollTo({
-                        top: targetElement.offsetTop - 100,
-                        behavior: 'smooth'
-                    });
-                }
-            }
-        });
-    });
-    
-    // Share button enhancements
-    document.querySelectorAll('.share-button').forEach(button => {
-        button.addEventListener('click', function(e) {
-            if (this.classList.contains('email')) {
-                // Email opens in default client, no need for window.open
-                return;
-            }
-            
-            e.preventDefault();
-            const url = this.href;
-            const width = 600;
-            const height = 400;
-            const left = (window.innerWidth - width) / 2;
-            const top = (window.innerHeight - height) / 2;
-            
-            window.open(
-                url,
-                'share',
-                `width=${width},height=${height},left=${left},top=${top},toolbar=0,status=0`
-            );
-        });
-    });
 });

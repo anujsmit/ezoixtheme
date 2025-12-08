@@ -3141,3 +3141,64 @@ function ezoix_register_ad_acf_fields() {
     ));
 }
 add_action('acf/init', 'ezoix_register_ad_acf_fields');
+/**
+ * Automatically set Focus Keywords for Yoast SEO or Rank Math using post tags.
+ * This function is hooked to run every time a post is saved/updated.
+ */
+function ezoix_set_focus_keyword_from_tags($post_id)
+{
+    // Check if the current user has permission to edit the post.
+    if (! current_user_can('edit_post', $post_id)) {
+        return;
+    }
+
+    // Check if it's an autosave or a revision, if so, exit.
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    if (wp_is_post_revision($post_id)) {
+        return;
+    }
+
+    // Get the tags associated with the post.
+    $tags = wp_get_post_tags($post_id);
+
+    if (! empty($tags)) {
+        $keywords = array();
+        foreach ($tags as $tag) {
+            $keywords[] = $tag->name;
+        }
+
+        // The Focus Keyword field usually accepts a comma-separated string.
+        $keyword_string = implode(', ', $keywords);
+
+        // ------------------------------------
+        // YOAST SEO INTEGRATION (Primary Focus Keyword)
+        // ------------------------------------
+        // Yoast SEO meta key is '_yoast_wpseo_focuskw'.
+        // We only set it if the user hasn't already defined a focus keyword.
+        if (is_plugin_active('wordpress-seo/wp-seo.php')) {
+            $existing_yoast_kw = get_post_meta($post_id, '_yoast_wpseo_focuskw', true);
+
+            // Only update if the field is empty to respect manual input.
+            if (empty($existing_yoast_kw)) {
+                update_post_meta($post_id, '_yoast_wpseo_focuskw', $keyword_string);
+            }
+        }
+
+        // ------------------------------------
+        // RANK MATH INTEGRATION (Primary Focus Keyword)
+        // ------------------------------------
+        // Rank Math meta key is 'rank_math_focus_keyword'.
+        if (is_plugin_active('seo-by-rank-math/rank-math.php')) {
+            $existing_rankmath_kw = get_post_meta($post_id, 'rank_math_focus_keyword', true);
+
+            // Rank Math can handle multiple keywords (tags), but we ensure the field is empty first.
+            if (empty($existing_rankmath_kw)) {
+                update_post_meta($post_id, 'rank_math_focus_keyword', $keyword_string);
+            }
+        }
+    }
+}
+add_action('save_post', 'ezoix_set_focus_keyword_from_tags');
+add_action('save_post_mobile_device', 'ezoix_set_focus_keyword_from_tags'); // Important for your custom post type!
