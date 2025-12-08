@@ -1,26 +1,72 @@
 // Ezoix Tech Blog JavaScript
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     console.log('Ezoix Tech Blog loaded');
+
+
+    // ===== THEME TOGGLE (NEW) =====
+    const themeToggle = document.getElementById('theme-toggle');
+    const darkModeClass = 'dark-mode';
+
+    function isDarkModePreferred() {
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    function applyTheme(isDark) {
+        if (isDark) {
+            document.body.classList.add(darkModeClass);
+            if (themeToggle) themeToggle.innerHTML = '🌞'; // Sun icon for switching to light mode
+        } else {
+            document.body.classList.remove(darkModeClass);
+            if (themeToggle) themeToggle.innerHTML = '🌙'; // Moon icon for switching to dark mode
+        }
+    }
+
+    // 1. Initial Load: Check local storage, then system preference
+    let savedTheme = localStorage.getItem('ezoix-theme');
+
+    if (savedTheme === 'dark') {
+        applyTheme(true);
+    } else if (savedTheme === 'light') {
+        applyTheme(false);
+    } else if (isDarkModePreferred()) {
+        applyTheme(true);
+    } else {
+        applyTheme(false);
+    }
+
+    // 2. Event Listener for manual toggle
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function () {
+            const isDark = document.body.classList.contains(darkModeClass);
+            if (isDark) {
+                applyTheme(false);
+                localStorage.setItem('ezoix-theme', 'light');
+            } else {
+                applyTheme(true);
+                localStorage.setItem('ezoix-theme', 'dark');
+            }
+        });
+    }
 
     // ===== MOBILE MENU TOGGLE =====
     const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
     const mainNavigation = document.getElementById('main-navigation');
-    
+
     if (mobileMenuToggle && mainNavigation) {
-        mobileMenuToggle.addEventListener('click', function() {
+        mobileMenuToggle.addEventListener('click', function () {
             const isExpanded = this.getAttribute('aria-expanded') === 'true';
             this.setAttribute('aria-expanded', !isExpanded);
             mainNavigation.classList.toggle('active');
-            
+
             // Update menu icon
             const menuIcon = this.querySelector('.menu-icon');
             if (menuIcon) {
                 menuIcon.textContent = isExpanded ? '☰' : '✕';
             }
         });
-        
+
         // Close menu when clicking outside
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             if (!mobileMenuToggle.contains(event.target) && !mainNavigation.contains(event.target)) {
                 mobileMenuToggle.setAttribute('aria-expanded', 'false');
                 mainNavigation.classList.remove('active');
@@ -35,13 +81,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===== LAZY LOAD IMAGES =====
     function lazyLoadImages() {
         const lazyImages = [].slice.call(document.querySelectorAll('img.lazy'));
-        
+
         if ('IntersectionObserver' in window) {
-            const lazyImageObserver = new IntersectionObserver(function(entries, observer) {
-                entries.forEach(function(entry) {
+            const lazyImageObserver = new IntersectionObserver(function (entries, observer) {
+                entries.forEach(function (entry) {
                     if (entry.isIntersecting) {
                         const lazyImage = entry.target;
-                        
+
                         // Load the image
                         if (lazyImage.dataset.src) {
                             lazyImage.src = lazyImage.dataset.src;
@@ -49,11 +95,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (lazyImage.dataset.srcset) {
                             lazyImage.srcset = lazyImage.dataset.srcset;
                         }
-                        
+
                         // Add loaded class
                         lazyImage.classList.remove('lazy');
                         lazyImage.classList.add('loaded');
-                        
+
                         // Stop observing
                         lazyImageObserver.unobserve(lazyImage);
                     }
@@ -63,12 +109,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 threshold: 0.1
             });
 
-            lazyImages.forEach(function(lazyImage) {
+            lazyImages.forEach(function (lazyImage) {
                 lazyImageObserver.observe(lazyImage);
             });
         } else {
             // Fallback for older browsers
-            lazyImages.forEach(function(lazyImage) {
+            lazyImages.forEach(function (lazyImage) {
                 if (lazyImage.dataset.src) {
                     lazyImage.src = lazyImage.dataset.src;
                 }
@@ -80,13 +126,13 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
-    
+
     // Initialize lazy loading
     lazyLoadImages();
 
     // ===== SCROLL TO TOP BUTTON =====
     const scrollToTopBtn = document.getElementById('scrollToTop');
-    
+
     if (scrollToTopBtn) {
         function toggleScrollButton() {
             if (window.pageYOffset > 300) {
@@ -95,15 +141,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 scrollToTopBtn.classList.remove('visible');
             }
         }
-        
+
         // Initial check
         toggleScrollButton();
-        
+
         // Listen to scroll events
         window.addEventListener('scroll', toggleScrollButton);
-        
+
         // Click handler
-        scrollToTopBtn.addEventListener('click', function() {
+        scrollToTopBtn.addEventListener('click', function () {
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
@@ -115,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let isLoading = false;
     let currentPage = 1;
     // Note: totalPages is set via wp_localize_script in functions.php
-    let totalPages = window.ezoix_ajax?.total_pages || 1; 
+    let totalPages = window.ezoix_ajax?.total_pages || 1;
     const postsContainer = document.getElementById('feed-container'); // Renamed from posts-container to match index.php
     const loadingIndicator = document.getElementById('feed-loading'); // Use the ID of the loading div
     const endMessage = document.getElementById('feed-end-message'); // Use the ID of the end message
@@ -124,24 +170,24 @@ document.addEventListener('DOMContentLoaded', function() {
     if (loadingIndicator) {
         loadingIndicator.style.display = 'none';
     }
-    
+
     function loadMorePosts() {
         // *FIX 2: Stop loading if currently loading or at the end*
         if (isLoading || currentPage >= totalPages) return;
-        
+
         isLoading = true;
         currentPage++;
-        
+
         // Show loading indicator
         if (loadingIndicator) {
             loadingIndicator.style.display = 'block';
         }
-        
+
         // Hide end message if it was shown previously
         if (endMessage) {
             endMessage.style.display = 'none';
         }
-        
+
         // Make AJAX request
         fetch(window.ezoix_ajax.ajaxurl, {
             method: 'POST',
@@ -154,53 +200,53 @@ document.addEventListener('DOMContentLoaded', function() {
                 nonce: window.ezoix_ajax.nonce
             })
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.text();
-        })
-        .then(data => {
-            if (data === 'no_more_posts' || currentPage >= totalPages) {
-                // No more posts to load or reached calculated end
-                if (endMessage) {
-                    endMessage.style.display = 'block';
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
                 }
-                // Set totalPages to current page to prevent future calls
-                totalPages = currentPage; 
-            } else if (postsContainer) {
-                // Add new posts to container
-                postsContainer.insertAdjacentHTML('beforeend', data);
-                
-                // Lazy load new images
-                lazyLoadImages();
-            }
-        })
-        .catch(error => {
-            console.error('Error loading posts:', error);
-            
-            // Show error message
-            if (postsContainer) {
-                postsContainer.insertAdjacentHTML('beforeend', 
-                    '<p class="error-message">Sorry, there was an error loading more content. Please try again.</p>'
-                );
-            }
-        })
-        .finally(() => {
-            isLoading = false;
-            if (loadingIndicator) {
-                loadingIndicator.style.display = 'none';
-            }
-        });
+                return response.text();
+            })
+            .then(data => {
+                if (data === 'no_more_posts' || currentPage >= totalPages) {
+                    // No more posts to load or reached calculated end
+                    if (endMessage) {
+                        endMessage.style.display = 'block';
+                    }
+                    // Set totalPages to current page to prevent future calls
+                    totalPages = currentPage;
+                } else if (postsContainer) {
+                    // Add new posts to container
+                    postsContainer.insertAdjacentHTML('beforeend', data);
+
+                    // Lazy load new images
+                    lazyLoadImages();
+                }
+            })
+            .catch(error => {
+                console.error('Error loading posts:', error);
+
+                // Show error message
+                if (postsContainer) {
+                    postsContainer.insertAdjacentHTML('beforeend',
+                        '<p class="error-message">Sorry, there was an error loading more content. Please try again.</p>'
+                    );
+                }
+            })
+            .finally(() => {
+                isLoading = false;
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'none';
+                }
+            });
     }
-    
+
     // Infinite scroll on window scroll (Existing logic is good, just ensuring it points to the right vars)
     function checkScroll() {
         if (isLoading || !postsContainer || currentPage >= totalPages) return;
-        
+
         const lastPost = postsContainer.lastElementChild;
         if (!lastPost) return;
-        
+
         // Check if the page is long enough to have content to load
         const scrollHeight = document.documentElement.scrollHeight;
         const clientHeight = document.documentElement.clientHeight;
@@ -212,22 +258,22 @@ document.addEventListener('DOMContentLoaded', function() {
             loadMorePosts();
         }
     }
-    
+
     // Throttle scroll event for performance
     let scrollTimeout;
-    window.addEventListener('scroll', function() {
+    window.addEventListener('scroll', function () {
         clearTimeout(scrollTimeout);
         scrollTimeout = setTimeout(checkScroll, 100);
     });
 
     // ===== IMAGE ERROR HANDLING =====
-    document.addEventListener('error', function(e) {
+    document.addEventListener('error', function (e) {
         if (e.target.tagName === 'IMG') {
             const img = e.target;
-            
+
             // Add error class
             img.classList.add('image-error');
-            
+
             // Replace with placeholder after a delay
             setTimeout(() => {
                 if (img.classList.contains('image-error')) {
@@ -240,13 +286,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== ENHANCE ACCESSIBILITY =====
     // Add focus styles for keyboard navigation
-    document.addEventListener('keyup', function(e) {
+    document.addEventListener('keyup', function (e) {
         if (e.key === 'Tab') {
             document.body.classList.add('keyboard-navigation');
         }
     });
 
-    document.addEventListener('mousedown', function() {
+    document.addEventListener('mousedown', function () {
         document.body.classList.remove('keyboard-navigation');
     });
 
@@ -254,10 +300,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             const href = this.getAttribute('href');
-            
+
             // Skip if it's just "#"
             if (href === '#') return;
-            
+
             const target = document.querySelector(href);
             if (target) {
                 e.preventDefault();
@@ -265,7 +311,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     behavior: 'smooth',
                     block: 'start'
                 });
-                
+
                 // Update URL without page reload
                 if (history.pushState) {
                     history.pushState(null, null, href);
@@ -281,36 +327,36 @@ document.addEventListener('DOMContentLoaded', function() {
         readingProgress.className = 'reading-progress';
         readingProgress.innerHTML = '<div class="reading-progress-bar"></div>';
         document.body.appendChild(readingProgress);
-        
+
         const readingProgressBar = readingProgress.querySelector('.reading-progress-bar');
-        
+
         function updateReadingProgress() {
             const postContent = document.querySelector('.post-content');
             if (!postContent) return;
-            
+
             const postHeight = postContent.offsetHeight;
             const windowHeight = window.innerHeight;
             const scrollTop = window.pageYOffset;
             const postTop = postContent.offsetTop;
             const postBottom = postTop + postHeight;
-            
+
             // Calculate progress
             let progress = 0;
             if (scrollTop >= postTop) {
                 const visibleHeight = Math.min(scrollTop + windowHeight, postBottom) - postTop;
                 progress = (visibleHeight / postHeight) * 100;
             }
-            
+
             // Update progress bar
             if (readingProgressBar) {
                 readingProgressBar.style.width = Math.min(100, progress) + '%';
             }
         }
-        
+
         // Update progress on scroll
         window.addEventListener('scroll', updateReadingProgress);
         window.addEventListener('resize', updateReadingProgress);
-        
+
         // Initial update
         updateReadingProgress();
     }
@@ -321,11 +367,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add focus effects to form fields
         const formFields = commentForm.querySelectorAll('input, textarea, select');
         formFields.forEach(field => {
-            field.addEventListener('focus', function() {
+            field.addEventListener('focus', function () {
                 this.parentElement.classList.add('focused');
             });
-            
-            field.addEventListener('blur', function() {
+
+            field.addEventListener('blur', function () {
                 if (!this.value) {
                     this.parentElement.classList.remove('focused');
                 }
@@ -347,7 +393,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===== POLYFILLS FOR OLDER BROWSERS =====
     // NodeList.forEach polyfill
     if (window.NodeList && !NodeList.prototype.forEach) {
-        NodeList.prototype.forEach = function(callback, thisArg) {
+        NodeList.prototype.forEach = function (callback, thisArg) {
             thisArg = thisArg || window;
             for (var i = 0; i < this.length; i++) {
                 callback.call(thisArg, this[i], i, this);
@@ -357,7 +403,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Object.assign polyfill
     if (typeof Object.assign != 'function') {
-        Object.assign = function(target) {
+        Object.assign = function (target) {
             if (target == null) {
                 throw new TypeError('Cannot convert undefined or null to object');
             }
@@ -379,7 +425,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ===== LOAD EVENT HANDLERS =====
-window.addEventListener('load', function() {
+window.addEventListener('load', function () {
     // Ensure all lazy images are loaded
     const lazyImages = document.querySelectorAll('img.lazy');
     lazyImages.forEach(img => {
@@ -390,10 +436,10 @@ window.addEventListener('load', function() {
             img.classList.add('loaded');
         }
     });
-    
+
     // Add loaded class to body for CSS transitions
     document.body.classList.add('loaded');
-    
+
     // Initialize any third-party scripts if needed
     if (typeof initializeThirdPartyScripts === 'function') {
         initializeThirdPartyScripts();
@@ -402,12 +448,12 @@ window.addEventListener('load', function() {
 
 // ===== RESIZE EVENT HANDLER (DEBOUNCED) =====
 let resizeTimeout;
-window.addEventListener('resize', function() {
+window.addEventListener('resize', function () {
     clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(function() {
+    resizeTimeout = setTimeout(function () {
         // Handle responsive adjustments here
         const viewportWidth = window.innerWidth;
-        
+
         // You can add responsive JS logic here if needed
         if (viewportWidth < 768) {
             // Mobile-specific adjustments

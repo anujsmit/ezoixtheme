@@ -5,19 +5,16 @@
     <meta charset="<?php bloginfo('charset'); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Preload critical resources -->
     <?php ezoix_preload_critical_resources(); ?>
 
     <?php wp_head(); ?>
 </head>
 
 <body <?php body_class(); ?>>
-    <!-- Skip to main content link for accessibility -->
     <a class="skip-link screen-reader-text" href="#main-content">
         <?php esc_html_e('Skip to content', 'ezoix'); ?>
     </a>
     
-    <!-- Header -->
     <header class="site-header">
         <div class="container">
             <div class="header-inner">
@@ -40,9 +37,13 @@
                     ?>
                 </nav>
 
-                <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="main-navigation">
-                    <span class="menu-icon">☰</span>
-                </button>
+                <div class="header-controls">
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+
+                    <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="main-navigation">
+                        <span class="menu-icon">☰</span>
+                    </button>
+                </div>
             </div>
         </div>
     </header>

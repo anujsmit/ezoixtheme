@@ -89,24 +89,24 @@ get_header(); ?>
                     <section class="full-specifications simple-specs">
                         <h2 class="section-title">Full Specifications</h2>
 
-                        <table class="specs-table" style="width: 100%; border-collapse: collapse;">
+                        <table class="specs-table">
                             <tbody>
                                 <?php
                                 foreach ($specifications as $category) :
                                     if (!empty($category['items'])) :
                                 ?>
                                         <tr class="category-header">
-                                            <td colspan="2" style="background: var(--primary-blue-light); color: var(--primary-blue-dark); padding: 15px 20px; font-weight: 700; font-size: 18px; border-top: 2px solid var(--primary-blue);">
+                                            <td colspan="2">
                                                 <?php echo esc_html($category['category']); ?>
                                             </td>
                                         </tr>
 
                                         <?php foreach ($category['items'] as $item) : ?>
-                                            <tr class="spec-row" style="border-bottom: 1px solid var(--border-light);">
-                                                <td class="spec-key" style="padding: 12px 20px; font-weight: 600; color: var(--text-medium); width: 35%; background: var(--background-light); border-right: 1px solid var(--border-light);">
+                                            <tr class="spec-row">
+                                                <td class="spec-key">
                                                     <?php echo esc_html($item['key']); ?>
                                                 </td>
-                                                <td class="spec-value" style="padding: 12px 20px; color: var(--text-dark);">
+                                                <td class="spec-value">
                                                     <?php echo esc_html($item['value']); ?>
                                                 </td>
                                             </tr>
@@ -127,27 +127,27 @@ get_header(); ?>
                     <h2 class="section-title">Pros & Cons</h2>
                     <section class="pros-cons">
                         <div class="conti">
-                            <div class="pros-cons-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                                <div class="pros-section" style="padding: 20px; border-radius: 8px; background: rgba(46, 204, 113, 0.1); border-left: 4px solid var(--color-success);">
-                                    <h3 style="color: var(--color-success); font-size: 18px; margin-top: 0; margin-bottom: 15px;">👍 Pros (<?php echo count($pros_cons['pros']); ?>)</h3>
-                                    <ul class="pros-list" style="list-style: none; padding: 0;">
+                            <div class="pros-cons-grid">
+                                <div class="pros-section">
+                                    <h3>👍 Pros (<?php echo count($pros_cons['pros']); ?>)</h3>
+                                    <ul class="pros-list">
                                         <?php if ($pros_cons['pros']) : ?>
                                             <?php foreach ($pros_cons['pros'] as $pro) : ?>
-                                                <li style="padding: 8px 0; border-bottom: 1px dashed rgba(46, 204, 113, 0.3); display: flex; align-items: center; gap: 8px;">
-                                                    <span class="check-icon" style="color: var(--color-success);">✓</span>
+                                                <li>
+                                                    <span class="check-icon">✓</span>
                                                     <?php echo esc_html($pro['item']); ?>
                                                 </li>
                                             <?php endforeach; ?>
                                         <?php endif; ?>
                                     </ul>
                                 </div>
-                                <div class="cons-section" style="padding: 20px; border-radius: 8px; background: rgba(231, 76, 60, 0.1); border-left: 4px solid var(--color-danger);">
-                                    <h3 style="color: var(--color-danger); font-size: 18px; margin-top: 0; margin-bottom: 15px;">👎 Cons (<?php echo count($pros_cons['cons']); ?>)</h3>
-                                    <ul class="cons-list" style="list-style: none; padding: 0;">
+                                <div class="cons-section">
+                                    <h3>👎 Cons (<?php echo count($pros_cons['cons']); ?>)</h3>
+                                    <ul class="cons-list">
                                         <?php if ($pros_cons['cons']) : ?>
                                             <?php foreach ($pros_cons['cons'] as $con) : ?>
-                                                <li style="padding: 8px 0; border-bottom: 1px dashed rgba(231, 76, 60, 0.3); display: flex; align-items: center; gap: 8px;">
-                                                    <span class="cross-icon" style="color: var(--color-danger);">✗</span>
+                                                <li>
+                                                    <span class="cross-icon">✗</span>
                                                     <?php echo esc_html($con['item']); ?>
                                                 </li>
                                             <?php endforeach; ?>
@@ -170,29 +170,29 @@ get_header(); ?>
                     ?>
                             <div class="similar-devices-widget sidebar-widget">
                                 <h3 class="widget-title">Similar Devices</h3>
-                                <ul class="similar-devices-list" style="list-style: none; padding: 0; margin: 0;">
+                                <ul class="similar-devices-list">
                                     <?php while ($similar_devices->have_posts()) : $similar_devices->the_post();
                                         $price = function_exists('get_field') ? get_field('device_price') : '';
                                     ?>
-                                        <li style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed var(--border-light);">
-                                            <a href="<?php the_permalink(); ?>" style="display: flex; gap: 10px; align-items: center; color: var(--text-dark);">
-                                                <div style="flex-shrink: 0;">
+                                        <li>
+                                            <a href="<?php the_permalink(); ?>" class="similar-device-link">
+                                                <div class="device-thumb-wrapper">
                                                     <?php if (has_post_thumbnail()) : ?>
                                                         <?php the_post_thumbnail('thumbnail', array(
                                                             'loading' => 'lazy',
-                                                            'style' => 'width: 60px; height: 60px; object-fit: cover; border-radius: 6px;',
+                                                            'class' => 'device-thumb-image',
                                                             'alt' => get_the_title()
                                                         )); ?>
                                                     <?php else: ?>
-                                                        <div style="width: 60px; height: 60px; background: var(--background-light); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px;">📱</div>
+                                                        <div class="device-thumb-placeholder">📱</div>
                                                     <?php endif; ?>
                                                 </div>
-                                                <div style="flex-grow: 1;">
-                                                    <div style="font-weight: 600; font-size: 15px; line-height: 1.3; margin-bottom: 2px;">
+                                                <div class="device-details-text">
+                                                    <div class="device-title-small">
                                                         <?php the_title(); ?>
                                                     </div>
                                                     <?php if ($price) : ?>
-                                                        <div style="color: var(--primary-blue-dark); font-size: 13px; font-weight: 700;">
+                                                        <div class="device-price-small">
                                                             <?php echo esc_html($price); ?>
                                                         </div>
                                                     <?php endif; ?>

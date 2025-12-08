@@ -57,7 +57,12 @@ function ezoix_theme_setup()
     add_image_size('featured-image', 1200, 600, true);
     add_image_size('hero-image', 1920, 800, true);
 
+    // NEW: 9:16 Portrait Aspect Ratio Sizes
+    add_image_size('feed-portrait', 120, 213, true);   // For side-by-side feed items (120 x 213px)
+    add_image_size('grid-portrait', 280, 498, true);   // For archive grid cards (280 x 498px)
+
     load_theme_textdomain('ezoix', get_template_directory() . '/languages');
+    // ...
 
     ezoix_register_mobile_device_cpt();
     ezoix_register_mobile_taxonomies();
@@ -664,10 +669,11 @@ add_action('pre_get_posts', 'ezoix_fix_category_pagination');
 /**
  * New function to include Mobile Devices CPT on the main home/index page query.
  */
-function ezoix_include_cpt_on_home($query) {
+function ezoix_include_cpt_on_home($query)
+{
     // Check if it's the main query and the home page (or posts page)
-    if ( ! is_admin() && $query->is_main_query() && ($query->is_home() || $query->is_front_page()) ) {
-        
+    if (! is_admin() && $query->is_main_query() && ($query->is_home() || $query->is_front_page())) {
+
         // Get the current post types
         $post_types = (array) $query->get('post_type');
 
@@ -690,7 +696,7 @@ add_action('pre_get_posts', 'ezoix_include_cpt_on_home');
 function ezoix_get_total_pages_for_merged_feed()
 {
     $posts_per_page = 10;
-    
+
     // 1. Get featured posts IDs to exclude from the main feed count
     $featured_posts = ezoix_cache_featured_posts(2);
     $exclude_ids = wp_list_pluck($featured_posts->posts, 'ID');
@@ -706,7 +712,7 @@ function ezoix_get_total_pages_for_merged_feed()
     ));
 
     $total_posts = $all_posts_query->found_posts;
-    
+
     // 3. Calculate pages
     // The first 15 posts are loaded in the initial page load (index.php)
     $initial_load_count = 15;
@@ -751,7 +757,7 @@ function ezoix_infinite_scroll_posts()
             // This logic is duplicated here from the newly created render_feed_item() in index.php
             $post_type = get_post_type();
             $categories = get_the_category();
-            
+
             // Shared details
             $permalink = get_the_permalink();
             $title = get_the_title();
@@ -768,7 +774,7 @@ function ezoix_infinite_scroll_posts()
                 $item_type_class = ' device-item';
                 $price = function_exists('get_field') ? get_field('device_price') : '';
                 $rating = function_exists('get_field') ? get_field('device_rating') : '';
-                
+
                 // Prioritize Price/Rating for mobile devices
                 $meta_right = '';
                 if ($price) {
@@ -779,7 +785,6 @@ function ezoix_infinite_scroll_posts()
                     $rating_value = number_format(floatval($rating) / 2, 1);
                     $meta_right .= '<span class="meta-item rating-item">⭐ <span class="meta-text">' . esc_html($rating_value) . '/5</span></span>';
                 }
-
             } else {
                 $item_type_class = ' article-item';
                 // Use reading time for standard posts
@@ -854,9 +859,10 @@ add_action('wp_ajax_nopriv_infinite_scroll_posts', 'ezoix_infinite_scroll_posts'
  * @param int $number The number of posts to return.
  * @return WP_Query
  */
-function ezoix_get_similar_mobile_devices($post_id, $number = 3) {
+function ezoix_get_similar_mobile_devices($post_id, $number = 3)
+{
     if (!$post_id || get_post_type($post_id) !== 'mobile_device') {
-        return new WP_Query(array('paged' => -1)); 
+        return new WP_Query(array('paged' => -1));
     }
 
     $tax_query = array('relation' => 'OR');
@@ -880,7 +886,7 @@ function ezoix_get_similar_mobile_devices($post_id, $number = 3) {
             'terms'    => $current_categories,
         );
     }
-    
+
     // If no matching terms exist, stop the query
     if (count($tax_query) === 1 && $tax_query['relation'] === 'OR') {
         return new WP_Query(array('paged' => -1));
@@ -1015,14 +1021,15 @@ add_action('wp_head', 'ezoix_schema_markup');
  * **NEW**: Add SEO Meta Description for Taxonomy Archives (Categories, Mobile Categories)
  * Uses the term description if available, and ensures it's stripped of HTML.
  */
-function ezoix_add_taxonomy_meta_description() {
+function ezoix_add_taxonomy_meta_description()
+{
     if (is_archive() && !is_post_type_archive()) {
         $term = get_queried_object();
 
         if ($term && !is_wp_error($term) && isset($term->description)) {
             $description = strip_tags(term_description($term->term_id, $term->taxonomy, false));
             $description = esc_attr(wp_trim_words($description, 30)); // Trim to ~150-160 characters
-            
+
             if (!empty($description)) {
                 // Ensure no SEO plugin has already added a meta description
                 if (!did_action('wpseo_head') && !did_action('rank_math/head')) {
@@ -1958,7 +1965,7 @@ function ezoix_import_mobile_json($json_content, $create_post = true)
             // ---------------------------
             // Moved the tags and meta description logic inside this block
             // ---------------------------
-            
+
             if (!empty($specs_data['tags'])) {
                 // Automatically set the tags
                 wp_set_post_tags($post_id, $specs_data['tags'], false);
@@ -3037,19 +3044,20 @@ add_filter('template_include', 'ezoix_mobile_archive_templates', 99);
  */
 
 // 1. Register the Options Page
-if ( function_exists( 'acf_add_options_page' ) ) {
-    acf_add_options_page( array(
+if (function_exists('acf_add_options_page')) {
+    acf_add_options_page(array(
         'page_title' => 'Theme Ad Settings',
         'menu_title' => 'Ad Settings',
         'menu_slug'  => 'theme-ad-settings',
         'capability' => 'manage_options',
         'redirect'   => false,
-    ) );
+    ));
 }
 
 // 2. Register the Fields for the Ad Slots
-function ezoix_register_ad_acf_fields() {
-    if ( ! function_exists( 'acf_add_local_field_group' ) ) {
+function ezoix_register_ad_acf_fields()
+{
+    if (! function_exists('acf_add_local_field_group')) {
         return;
     }
 
@@ -3072,7 +3080,7 @@ function ezoix_register_ad_acf_fields() {
                 'name' => 'ad_top_url',
                 'type' => 'url',
             ),
-            
+
             // Mobile Bottom Ad (Small banner)
             array(
                 'key' => 'field_ad_bottom_image',
@@ -3104,7 +3112,7 @@ function ezoix_register_ad_acf_fields() {
                 'name' => 'ad_left_url',
                 'type' => 'url',
             ),
-            
+
             // Desktop Right Ad (Skyscraper/Sidebar)
             array(
                 'key' => 'field_ad_right_image',

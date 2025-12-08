@@ -5,7 +5,8 @@
  * Helper function to render a unified feed item card.
  * This function is used both for the initial load and the AJAX load.
  */
-function render_feed_item() {
+function render_feed_item()
+{
     // Shared details
     $post_id = get_the_ID();
     $post_type = get_post_type();
@@ -28,7 +29,7 @@ function render_feed_item() {
         $rating = function_exists('get_field') ? get_field('device_rating') : '';
         $placeholder_icon = '📱';
         $placeholder_text = 'Mobile Device';
-        
+
         // Prioritize Price/Rating for mobile devices
         if ($price) {
             $meta_right .= '<span class="meta-item price-item">💵 <span class="meta-text">' . esc_html($price) . '</span></span>';
@@ -52,7 +53,7 @@ function render_feed_item() {
             <?php if (has_post_thumbnail()) : ?>
                 <div class="item-thumbnail">
                     <a href="<?php echo esc_url($permalink); ?>">
-                        <?php the_post_thumbnail('thumbnail', array(
+                        <?php the_post_thumbnail('feed-portrait', array(
                             'loading' => 'lazy',
                             'class' => 'feed-thumbnail'
                         )); ?>
@@ -125,7 +126,7 @@ function render_feed_item() {
             wp_reset_postdata();
         else :
             // Display message if no content is found
-            ?>
+        ?>
             <div class="no-content">
                 <div class="no-content-icon">📭</div>
                 <h3>No articles or devices yet</h3>

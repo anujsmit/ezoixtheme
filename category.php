@@ -21,7 +21,7 @@
                                 <a href="<?php the_permalink(); ?>">
                                     <?php if (has_post_thumbnail()) : ?>
                                         <?php
-                                        the_post_thumbnail('thumbnail', array(
+                                        the_post_thumbnail('grid-portrait', array(
                                             'loading' => 'lazy',
                                             'alt' => get_the_title(),
                                             'class' => 'category-post-thumbnail'

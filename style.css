@@ -1,64 +1,241 @@
 /*
 Theme Name: Ezoix Tech Blog
 Description: A modern tech blog theme for ezoix.com
-Version: 1.0.3
+Version: 1.0.4
 */
 
-/* ===== CSS VARIABLES ===== */
+/* ===== CSS VARIABLES - LIGHT MODE (Original) ===== */
 :root {
-    --primary-blue: #0066ff;
-    --primary-blue-light: #e6f0ff;
-    --primary-blue-dark: #0052cc;
-    --text-dark: #333333;
-    --text-medium: #666666;
-    --text-light: #999999;
+    --primary-color: #009688; /* Deep Teal/Cyan - Modern & Professional */
+    --primary-light: #e0f2f1; /* Very Light Teal for backgrounds */
+    --primary-dark: #00796b; /* Darker Teal for hover states */
+    --text-dark: #1f2937;    /* Dark Slate Grey for high contrast */
+    --text-medium: #4b5563;
+    --text-light: #9ca3af;
     --background-white: #ffffff;
-    --background-light: #f8f9fa;
-    --border-light: #eaeaea;
-    --border-medium: #dddddd;
-    --shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    --shadow-hover: 0 5px 15px rgba(0, 0, 0, 0.08);
-    --radius: 6px;
+    --background-light: #f9fafb;
+    --border-light: #e5e7eb;
+    --border-medium: #d1d5db;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.1);
+    --radius: 8px;
     --transition: all 0.3s ease;
-    --color-success: #2ecc71;
-    --color-danger: #e74c3c;
-    --color-warning: #f1c40f;
-    --color-info: #3498db;
-    --color-rating: #f39c12;
-    /* Custom Gradients */
-    --gradient-device-header: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --gradient-category-header: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --color-success: #10b981;
+    --color-danger: #ef4444;
+    --color-warning: #f59e0b;
+    --color-info: #3b82f6;
+    --color-rating: #fbbf24;
+
+    /* Custom Gradients - Updated to Teal/Blue */
+    --gradient-device-header: linear-gradient(135deg, var(--primary-dark) 0%, var(--color-info) 100%);
+    --gradient-category-header: linear-gradient(135deg, #a78bfa 0%, var(--primary-color) 100%);
 }
 
-/* ===== CSS RESET & BASE STYLES ===== */
-*,
-*::before,
-*::after {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-html {
-    scroll-behavior: smooth;
-    height: auto;
-    min-height: 100vh;
-}
-
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
-    font-size: 17px;
-    line-height: 1.7;
+/* ===== THEME TOGGLE BUTTON (NEW) ===== */
+.theme-toggle {
+    background: var(--background-light);
+    border: 1px solid var(--border-medium);
     color: var(--text-dark);
-    background-color: var(--background-white);
-    overflow-x: hidden;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    font-size: 20px;
+    cursor: pointer;
+    min-width: 44px;
+    height: 44px;
+    border-radius: var(--radius);
+    padding: 0 10px;
+    margin-left: 10px;
+    transition: var(--transition);
+    line-height: 1; /* Fix vertical alignment of emoji */
+}
+.theme-toggle:hover {
+    background: var(--border-medium);
+}
+.header-controls {
     display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+    align-items: center;
 }
 
+/* -------------------------------------------------------------------------- */
+/* DARK MODE                                 */
+/* -------------------------------------------------------------------------- */
+body.dark-mode {
+    /* Dark Mode Variables */
+    --primary-color: #4db6ac;
+    --primary-light: #1e3a38;
+    --primary-dark: #26a69a;
+    --text-dark: #f0f4f8;
+    --text-medium: #a7b7c9;
+    --text-light: #6b7280;
+    --background-white: #111827;
+    --background-light: #1f2937;
+    --border-light: #374151;
+    --border-medium: #4b5563;
+    --shadow: none;
+    --shadow-hover: 0 4px 15px rgba(255, 255, 255, 0.1);
+
+    /* Dark Mode Base Styles */
+    background-color: var(--background-white);
+    color: var(--text-dark);
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6,
+body.dark-mode .site-logo a {
+    color: var(--text-dark);
+}
+body.dark-mode a {
+    color: var(--primary-color);
+}
+body.dark-mode a:hover,
+body.dark-mode a:focus {
+    color: var(--primary-dark);
+}
+
+/* Header, Footer, and Navigation */
+body.dark-mode .site-header {
+    background-color: var(--background-light);
+    box-shadow: var(--shadow-hover);
+}
+body.dark-mode .site-footer {
+    background-color: var(--background-light);
+    border-top: 1px solid var(--border-medium);
+}
+body.dark-mode .footer-bottom {
+    border-top-color: var(--border-medium);
+    color: var(--text-medium);
+}
+body.dark-mode .main-navigation,
+body.dark-mode .main-navigation.active {
+    background: var(--background-light);
+    /* box-shadow: var(--shadow-hover); */
+    border-top-color: var(--border-medium);
+}
+body.dark-mode .main-navigation li {
+    border-bottom-color: var(--border-medium);
+}
+body.dark-mode .main-navigation a {
+    color: var(--text-medium);
+}
+body.dark-mode .main-navigation a:hover {
+    color: var(--text-dark);
+}
+
+/* Theme Toggle in Dark Mode */
+body.dark-mode .theme-toggle {
+    background: var(--border-medium);
+    border-color: var(--border-medium);
+    color: var(--text-dark);
+}
+body.dark-mode .theme-toggle:hover {
+    background: var(--border-light);
+}
+
+/* Hero Section */
+body.dark-mode .hero-section {
+    background-color: var(--background-light);
+}
+body.dark-mode .trending-topic {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+}
+body.dark-mode .trending-topic:hover {
+    background-color: var(--primary-color);
+    color: var(--background-white);
+}
+
+/* Feed Items, Cards, and Widgets */
+body.dark-mode .feed-item,
+body.dark-mode .category-post-card,
+body.dark-mode .sidebar-widget,
+body.dark-mode .mobile-device-card,
+body.dark-mode .single-post {
+    background: var(--background-light);
+    border-color: var(--border-medium);
+    box-shadow: none;
+}
+body.dark-mode .feed-item:hover,
+body.dark-mode .category-post-card:hover,
+body.dark-mode .mobile-device-card:hover {
+    box-shadow: 0 0 0 1px var(--primary-color), var(--shadow-hover);
+    border-color: var(--primary-color);
+}
+body.dark-mode .feed-item .item-title a {
+    color: var(--text-dark);
+}
+body.dark-mode .feed-item .item-excerpt,
+body.dark-mode .category-post-excerpt,
+body.dark-mode .single-post .post-content {
+    color: var(--text-medium);
+}
+body.dark-mode .feed-item .item-footer {
+    border-top-color: var(--border-medium);
+}
+body.dark-mode .feed-item .meta-item {
+    background: var(--border-medium);
+    color: var(--text-dark);
+}
+body.dark-mode .feed-item .meta-item.rating-item {
+    color: var(--background-white);
+}
+
+/* Single Post Specific */
+body.dark-mode .single-post-meta {
+    color: var(--text-medium);
+}
+
+/* Mobile Specs Table */
+body.dark-mode .mobile-device-container {
+    background: var(--background-white);
+}
+body.dark-mode .mobile-specs-container {
+    background: var(--background-light);
+    box-shadow: var(--shadow-hover);
+}
+body.dark-mode .specs-table .category-header td {
+    background: var(--primary-dark);
+    border-bottom-color: var(--border-medium) !important;
+}
+body.dark-mode .spec-key {
+    background: var(--border-light) !important;
+    border-right-color: var(--border-medium) !important;
+    color: var(--text-medium) !important;
+}
+body.dark-mode .spec-value {
+    color: var(--text-dark) !important;
+}
+body.dark-mode .spec-row {
+    border-bottom-color: var(--border-medium);
+}
+body.dark-mode .spec-row:hover {
+    background: var(--border-light);
+}
+
+/* Pros & Cons */
+body.dark-mode .pros-section {
+    background: rgba(16, 185, 129, 0.15);
+    border-left-color: var(--color-success);
+}
+body.dark-mode .cons-section {
+    background: rgba(239, 68, 68, 0.15);
+    border-left-color: var(--color-danger);
+}
+body.dark-mode .pros-section li, body.dark-mode .cons-section li {
+    border-bottom-color: var(--border-medium);
+}
+
+/* Category Page */
+body.dark-mode .category-header {
+    /* Use original gradient, but text is white */
+}
+body.dark-mode .category-post-content {
+    color: var(--text-dark);
+}
+body.dark-mode .category-post-meta {
+    color: var(--text-medium);
+}
 @media (prefers-reduced-motion: reduce) {
     html {
         scroll-behavior: auto;
@@ -77,7 +254,7 @@ button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-    outline: 2px solid var(--primary-blue);
+    outline: 2px solid var(--primary-color);
     outline-offset: 2px;
 }
 
@@ -85,7 +262,7 @@ select:focus-visible {
     position: absolute;
     top: -40px;
     left: 6px;
-    background: var(--primary-blue);
+    background: var(--primary-color);
     color: white;
     padding: 8px;
     text-decoration: none;
@@ -112,14 +289,14 @@ h6 {
 }
 
 a {
-    color: var(--primary-blue);
+    color: var(--primary-color);
     text-decoration: none;
     transition: var(--transition);
 }
 
 a:hover,
 a:focus {
-    color: var(--primary-blue-dark);
+    color: var(--primary-dark);
 }
 
 img {
@@ -171,7 +348,7 @@ img {
 .site-logo {
     font-size: 24px;
     font-weight: 800;
-    color: var(--primary-blue);
+    color: var(--primary-color);
     margin-right: 10px;
     font-family: 'Inter', sans-serif;
 }
@@ -201,7 +378,7 @@ img {
     left: 0;
     width: 0;
     height: 2px;
-    background: var(--primary-blue);
+    background: var(--primary-color);
     transition: var(--transition);
 }
 
@@ -264,8 +441,8 @@ img {
 }
 
 .trending-topic {
-    background-color: var(--primary-blue-light);
-    color: var(--primary-blue);
+    background-color: var(--primary-light);
+    color: var(--primary-color);
     padding: 10px 18px;
     border-radius: 30px;
     font-size: 15px;
@@ -275,10 +452,10 @@ img {
 }
 
 .trending-topic:hover {
-    background-color: var(--primary-blue);
+    background-color: var(--primary-color);
     color: white;
     transform: translateY(-2px);
-    border-color: var(--primary-blue);
+    border-color: var(--primary-color);
 }
 
 /* ===== MAIN CONTENT LAYOUT ===== */
@@ -317,8 +494,6 @@ img {
 
 /* ===== INDEX.PHP FEED ITEMS ===== */
 .feed-items {
-    /* display: flex;
-    flex-direction: column; */
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 25px;
@@ -328,7 +503,7 @@ img {
 /* Feed Item Structure */
 .feed-item {
     background: white;
-    border-radius: 12px;
+    border-radius: var(--radius);
     padding: 20px;
     box-shadow: var(--shadow-hover);
     border: 1px solid var(--border-light);
@@ -345,7 +520,7 @@ img {
 .feed-item:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-    border-color: var(--primary-blue);
+    border-color: var(--primary-color);
 }
 
 /* Thumbnail */
@@ -354,9 +529,9 @@ img {
     height: 120px;
     flex-shrink: 0;
     position: relative;
-    border-radius: 10px;
+    border-radius: 8px; /* Adjusted to match new radius var */
     overflow: hidden;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: linear-gradient(135deg, var(--background-light) 0%, var(--border-medium) 100%);
 }
 
 .feed-item .item-thumbnail {
@@ -375,44 +550,29 @@ img {
     transform: scale(1.05);
 }
 
-/* Placeholder for missing images (Default for article) */
-.feed-item .item-thumbnail:empty,
-.feed-item .item-thumbnail a .placeholder-icon,
-.feed-item .item-thumbnail.placeholder-article a {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* Placeholder for missing images */
+.feed-item .item-thumbnail a {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 100%; /* Ensure link/placeholder fills container */
+    width: 100%;
     height: 100%;
     color: white;
     text-align: center;
-}
-.feed-item .item-thumbnail a {
-    display: block;
-    width: 100%;
-    height: 100%;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
 }
 
-
-/* Specific placeholder for Mobile Devices */
-.feed-item .item-thumbnail.placeholder-mobile_device a {
-    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); /* Green gradient for devices */
-}
-.feed-item .item-thumbnail.placeholder-mobile_device a::after {
-    content: 'Mobile Device';
-    font-size: 10px;
-    opacity: 0.8;
-    margin-top: 5px;
-}
-
-/* Placeholder animation (kept from old logic) */
-.feed-item .item-thumbnail:empty::after {
-    content: '📝';
+.feed-item .item-thumbnail .placeholder-icon {
     font-size: 36px;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
     animation: gentlePulse 2s ease-in-out infinite;
+}
+
+.feed-item .item-thumbnail .placeholder-text {
+    font-size: 10px;
+    color: white;
+    opacity: 0.8;
 }
 
 @keyframes gentlePulse {
@@ -448,7 +608,7 @@ img {
 }
 
 .feed-item .item-title a:hover {
-    color: var(--primary-blue);
+    color: var(--primary-color);
 }
 
 .feed-item .item-excerpt {
@@ -471,8 +631,8 @@ img {
     padding-top: 12px;
     border-top: 1px solid var(--border-light);
     font-size: 12px;
-    grid-column: 1 / -1;
     margin-top: 15px;
+    width: 100%; /* Ensure footer spans full width */
 }
 
 .feed-item .footer-left {
@@ -515,16 +675,18 @@ img {
 
 /* Specific styling for Price and Rating metadata in the merged feed */
 .feed-item .meta-item.price-item {
-    background: #e6ffed; /* Light green */
-    color: #27ae60;
+    background: #e6f7ff; /* Light blue */
+    color: #0073aa; /* WordPress Blue */
     font-weight: 600;
 }
 .feed-item .meta-item.rating-item {
-    background: #fff8e1; /* Light yellow */
-    color: var(--color-rating);
+    background: var(--color-rating);
+    color: #fff;
     font-weight: 600;
 }
-
+.feed-item .meta-item.rating-item .meta-text {
+    color: white;
+}
 
 /* ===== CATEGORY PAGE STYLES ===== */
 .category-page {
@@ -535,9 +697,9 @@ img {
     text-align: center;
     padding: 40px 0;
     margin-bottom: 30px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--gradient-category-header); /* New Gradient */
     color: white;
-    border-radius: 12px;
+    border-radius: var(--radius);
     border-bottom: none;
 }
 
@@ -570,20 +732,20 @@ img {
 /* Category Post Card */
 .category-post-card {
     background: white;
-    border-radius: 12px;
+    border-radius: var(--radius);
     overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow);
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
     height: 100%;
-    border: 1px solid #eaeaea;
+    border: 1px solid var(--border-light);
 }
 
 .category-post-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    border-color: #667eea;
+    box-shadow: var(--shadow-hover);
+    border-color: var(--primary-color);
 }
 
 /* Category Thumbnail */
@@ -591,7 +753,7 @@ img {
     height: 180px;
     overflow: hidden;
     position: relative;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: linear-gradient(135deg, var(--background-light) 0%, var(--border-medium) 100%);
 }
 
 .category-post-thumbnail {
@@ -613,7 +775,7 @@ img {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
     position: relative;
 }
 
@@ -690,7 +852,7 @@ img {
 }
 
 .category-post-title a:hover {
-    color: #667eea;
+    color: var(--primary-color);
 }
 
 .category-post-meta {
@@ -728,26 +890,26 @@ img {
 .category-read-more {
     display: inline-flex;
     align-items: center;
-    color: #667eea;
+    color: var(--primary-color);
     font-weight: 600;
     font-size: 14px;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     align-self: flex-start;
     padding: 8px 0;
 }
 
 .category-read-more:hover {
-    color: #764ba2;
+    color: var(--primary-dark);
     transform: translateX(5px);
 }
 
-/* ===== SINGLE MOBILE DEVICE TEMPLATE (Restored Design) ===== */
+/* ===== SINGLE MOBILE DEVICE TEMPLATE STYLES ===== */
 .mobile-device-container {
     background: var(--background-light);
     min-height: 100vh;
     width: 100%;
-    padding: 0; /* Remove container padding here */
+    padding: 0;
 }
 
 /* Main wrapper for the device specs box */
@@ -755,7 +917,7 @@ img {
     max-width: 1000px;
     margin: 40px auto;
     background: var(--background-white);
-    border-radius: 8px;
+    border-radius: var(--radius);
     overflow: hidden;
     box-shadow: 0 2px 15px rgba(0,0,0,0.1);
 }
@@ -765,7 +927,7 @@ img {
     color: white;
     padding: 30px;
     text-align: center;
-    margin-bottom: 0; /* Handled by container padding */
+    margin-bottom: 0;
     width: 100%;
 }
 
@@ -801,37 +963,34 @@ img {
     display: grid;
     grid-template-columns: 1fr 350px;
     gap: 40px;
-    padding: 30px; /* Internal padding for specs and sidebar */
+    padding: 30px;
 }
 
 /* Specifications Table - Custom Styles */
 .specs-table-wrapper {
-    padding: 0; /* Already included in device-content-wrapper */
+    padding: 0;
 }
 
-.mobile-specs-table {
+.specs-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 16px;
     box-shadow: 0 0 10px rgba(0,0,0,0.05);
-    border-radius: 8px;
+    border-radius: var(--radius);
     overflow: hidden;
 }
 
 .specs-section-header {
-    background: #f8f9fa;
+    background: var(--background-light);
     padding: 20px;
     font-size: 24px;
-    color: #333;
+    color: var(--text-dark);
     text-align: center;
 }
 
-.category-header {
-    /* FIXED to solid blue as seen in screenshots */
-    background: var(--primary-blue);
-}
-
-.category-header td {
+/* Table Category Header */
+.specs-table .category-header td {
+    background: var(--primary-color);
     color: white !important;
     margin: 0;
     padding: 15px 20px !important;
@@ -856,7 +1015,7 @@ img {
     padding: 15px 20px !important;
     width: 35% !important;
     font-weight: 600 !important;
-    color: #555 !important;
+    color: var(--text-medium) !important;
     border-right: 1px solid var(--border-light) !important;
     background: var(--background-light) !important;
     border-bottom: none !important;
@@ -870,10 +1029,10 @@ img {
 
 .separator td {
     padding: 10px;
-    background: #f8f9fa;
+    background: var(--background-light);
 }
 
-/* Affiliate Links Section - For full-width CPT template */
+/* Affiliate Links Section */
 .affiliate-links-section {
     padding: 30px;
     background: var(--gradient-device-header);
@@ -882,7 +1041,7 @@ img {
 }
 
 .section-title.buy-now-title {
-    color: white;
+    color: rgb(0, 0, 0);
     margin: 0 0 20px 0;
     font-size: 24px;
 }
@@ -898,11 +1057,11 @@ img {
     display: inline-block;
     padding: 15px 30px;
     background: white;
-    color: #667eea;
+    color: var(--primary-color);
     text-decoration: none;
     border-radius: 50px;
     font-weight: 600;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     border: 2px solid transparent;
 }
 
@@ -914,19 +1073,18 @@ img {
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }
 
-/* Updated status colors for consistency with PHP logic */
-.status-available { background-color: rgba(46, 204, 113, 0.9); color: white; }
-.status-upcoming { background-color: rgba(52, 152, 219, 0.9); color: white; }
-.status-discontinued { background-color: rgba(149, 165, 166, 0.9); color: white; }
-.status-rumored { background-color: rgba(155, 89, 182, 0.9); color: white; }
-.status-unknown { background-color: rgba(241, 196, 15, 0.9); color: var(--text-dark); }
+/* Status Colors */
+.status-available { background-color: rgba(16, 185, 129, 0.9); color: white; } /* Green */
+.status-upcoming { background-color: rgba(59, 130, 246, 0.9); color: white; } /* Blue */
+.status-discontinued { background-color: rgba(107, 114, 128, 0.9); color: white; } /* Grey */
+.status-rumored { background-color: rgba(139, 92, 246, 0.9); color: white; } /* Violet */
+.status-unknown { background-color: rgba(245, 158, 11, 0.9); color: var(--text-dark); } /* Amber */
 
 
 /* Sidebar Widgets */
 .device-sidebar {
     position: sticky;
-    top: 0px;
-    right: 0;
+    top: 100px; /* Adjusted sticky position */
     height: fit-content;
     display: flex;
     flex-direction: column;
@@ -934,10 +1092,11 @@ img {
 }
 
 .sidebar-widget {
-    background: white;
-    border-radius: 12px;
+    background: var(--background-white);
+    border-radius: var(--radius);
     padding: 25px;
-    box-shadow: var(--shadow-hover);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-light);
 }
 
 .widget-title {
@@ -946,18 +1105,155 @@ img {
     padding-bottom: 10px;
     border-bottom: 2px solid var(--border-light);
     font-weight: 700;
+    color: var(--text-dark);
 }
-.buynow{
-    background-color: #000;
+
+/* Buy Now Button (CTA Widget) */
+.buynow {
+    background-color: var(--primary-color);
     padding: 20px 40px;
     color: white;
-    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 22px;
-    border-radius: 12px;
+    border-radius: 8px;
     margin-top: 10px;
     cursor: pointer;
+    border: none;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: var(--transition);
 }
-/* ===== SINGLE.PHP STYLES ===== */
+.buynow:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+
+/* Pros & Cons List Styling (New) */
+.pros-cons-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.pros-section {
+    padding: 20px;
+    border-radius: var(--radius);
+    background: var(--color-success);
+    background: rgba(16, 185, 129, 0.1); /* Light Green BG */
+    border-left: 4px solid var(--color-success);
+}
+
+.pros-section h3 {
+    color: var(--color-success);
+    font-size: 18px;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.pros-section ul, .cons-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.pros-section li, .cons-section li {
+    padding: 8px 0;
+    border-bottom: 1px dashed rgba(46, 204, 113, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+}
+
+.cons-section {
+    padding: 20px;
+    border-radius: var(--radius);
+    background: rgba(239, 68, 68, 0.1); /* Light Red BG */
+    border-left: 4px solid var(--color-danger);
+}
+
+.cons-section h3 {
+    color: var(--color-danger);
+    font-size: 18px;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.pros-section li .check-icon {
+    color: var(--color-success);
+    font-weight: 700;
+}
+
+.cons-section li .cross-icon {
+    color: var(--color-danger);
+    font-weight: 700;
+}
+
+/* Similar Devices Widget Styles (New) */
+.similar-devices-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.similar-devices-list li {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px dashed var(--border-light);
+}
+.similar-devices-list li:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+.similar-device-link {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    color: var(--text-dark);
+}
+.similar-device-link:hover .device-title-small {
+    color: var(--primary-color);
+}
+.device-thumb-wrapper {
+    flex-shrink: 0;
+}
+.device-thumb-image {
+    width: 60px; 
+    height: 60px; 
+    object-fit: cover; 
+    border-radius: 6px;
+}
+.device-thumb-placeholder {
+    width: 60px; 
+    height: 60px; 
+    background: var(--background-light); 
+    border-radius: 6px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 20px;
+    color: var(--text-medium);
+}
+.device-details-text {
+    flex-grow: 1;
+}
+.device-title-small {
+    font-weight: 600; 
+    font-size: 15px; 
+    line-height: 1.3; 
+    margin-bottom: 2px;
+    transition: color 0.3s ease;
+}
+.device-price-small {
+    color: var(--primary-dark); 
+    font-size: 13px; 
+    font-weight: 700;
+}
+/* ===== SINGLE.PHP STYLES (Kept intact) ===== */
 .single-post {
     background-color: var(--background-white);
     border-radius: var(--radius);
@@ -1006,14 +1302,14 @@ img {
     line-height: 1.8;
 }
 
-/* ===== ARCHIVE MOBILE DEVICE STYLES ===== */
+/* ===== ARCHIVE MOBILE DEVICE STYLES (Kept intact) ===== */
 .archive-header {
-    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
-    color: rgb(0, 0, 0);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: white;
     padding: 60px 30px;
     text-align: center;
     margin-bottom: 40px;
-    border-radius: 12px;
+    border-radius: var(--radius);
     position: relative;
     overflow: hidden;
 }
@@ -1022,7 +1318,7 @@ img {
     font-size: clamp(32px, 4vw, 42px);
     font-weight: 800;
     margin-bottom: 20px;
-    color: #000;
+    color: white;
     position: relative;
     z-index: 1;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
@@ -1036,6 +1332,7 @@ img {
     position: relative;
     z-index: 1;
     opacity: 0.9;
+    color: white;
 }
 
 .archive-meta {
@@ -1046,6 +1343,7 @@ img {
     padding: 10px 25px;
     border-radius: 25px;
     backdrop-filter: blur(10px);
+    color: white;
 }
 
 /* Mobile Devices Grid */
@@ -1061,7 +1359,7 @@ img {
 
 .mobile-device-card {
     background: white;
-    border-radius: 12px;
+    border-radius: var(--radius);
     overflow: hidden;
     box-shadow: var(--shadow);
     transition: var(--transition);
@@ -1075,21 +1373,23 @@ img {
 .mobile-device-card:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-hover);
-    border-color: var(--primary-blue);
+    border-color: var(--primary-color);
 }
+/* ... other archive styles remain ... */
 
-/* ===== LOAD MORE / INFINITE SCROLL STYLES ===== */
+
+/* ===== LOAD MORE / INFINITE SCROLL STYLES (Kept intact) ===== */
 .load-more-section {
     text-align: center;
     margin-top: 30px;
 }
 
 .feed-loading {
-    display: none; /* Controlled by JS, but useful if JS is slow to hide */
+    display: none;
     padding: 20px;
     text-align: center;
     font-weight: 600;
-    color: var(--primary-blue);
+    color: var(--primary-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1097,20 +1397,20 @@ img {
 }
 
 .loading-spinner {
-    border: 4px solid var(--primary-blue-light);
-    border-top: 4px solid var(--primary-blue);
+    border: 4px solid var(--primary-light);
+    border-top: 4px solid var(--primary-color);
     border-radius: 50%;
     width: 20px;
     height: 20px;
     animation: spin 1s linear infinite;
 }
 
-/* ===== SCROLL TO TOP ===== */
+/* ===== SCROLL TO TOP (Kept intact) ===== */
 .scroll-to-top {
     position: fixed;
     bottom: 30px;
     right: 30px;
-    background: var(--primary-blue);
+    background: var(--primary-color);
     color: white;
     border: none;
     border-radius: 50%;
@@ -1135,11 +1435,11 @@ img {
 }
 
 .scroll-to-top:hover {
-    background: var(--primary-blue-dark);
+    background: var(--primary-dark);
     transform: translateY(-2px);
 }
 
-/* ===== FOOTER ===== */
+/* ===== FOOTER (Kept intact) ===== */
 .site-footer {
     background-color: var(--background-light);
     padding: 60px 0 30px;
@@ -1180,7 +1480,7 @@ img {
 }
 
 .footer-menu a:hover {
-    color: var(--primary-blue);
+    color: var(--primary-color);
 }
 
 .footer-bottom {
@@ -1191,7 +1491,7 @@ img {
     font-size: 14px;
 }
 
-/* ===== ANIMATIONS ===== */
+/* ===== ANIMATIONS (Kept intact) ===== */
 @keyframes spin {
     0% {
         transform: rotate(0deg);
@@ -1214,7 +1514,7 @@ img {
     }
 }
 
-/* ===== RESPONSIVE DESIGN ===== */
+/* ===== RESPONSIVE DESIGN (Kept intact, updated var names) ===== */
 
 /* Tablet and Small Desktop */
 @media (max-width: 1200px) {
@@ -1310,7 +1610,7 @@ img {
 
     .feed-item .thumbnail {
         width: 100%;
-        height: 150px;
+        height: 250px; /* Maintain vertical look on mobile */
     }
 
     .feed-item .item-title {
@@ -1353,7 +1653,7 @@ img {
     }
 
     .category-thumbnail {
-        height: 150px;
+        height: 390px; /* Adjusted height for mobile grid item to maintain vertical look */
     }
 
     .category-post-content {
@@ -1381,7 +1681,7 @@ img {
         gap: 30px;
     }
 
-    .mobile-specs-table {
+    .specs-table {
         font-size: 14px;
     }
 
@@ -1399,7 +1699,7 @@ img {
     .affiliate-buttons {
         flex-direction: column;
     }
-    
+
     .affiliate-button {
         width: 100%;
         margin-bottom: 10px;
@@ -1491,11 +1791,11 @@ img {
     }
 
     /* Mobile Specs Responsive */
-    .mobile-specs-table {
+    .specs-table {
         display: block;
         overflow-x: auto;
     }
-    
+
     .spec-key {
         width: 50% !important;
     }
@@ -1527,7 +1827,7 @@ img {
     }
 }
 
-/* ===== PRINT STYLES ===== */
+/* ===== PRINT STYLES (Kept intact) ===== */
 @media print {
 
     .site-header,
@@ -1573,15 +1873,15 @@ html {
 /* ========================================= */
 .device-best-buy-comparison {
     margin-bottom: 30px;
-    background: #e6f0ff; /* Light blue background to distinguish the section */
-    border: 1px solid var(--primary-blue-light);
+    background: var(--primary-light);
+    border: 1px solid var(--primary-light);
     border-radius: var(--radius);
     padding: 20px;
 }
 
 .device-best-buy-comparison .section-title {
-    color: var(--primary-blue);
-    border-bottom: 2px solid var(--primary-blue);
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
     padding-bottom: 10px;
     margin-bottom: 20px;
     text-align: center;
@@ -1596,7 +1896,7 @@ html {
 }
 
 .best-buy-table th {
-    background-color: var(--primary-blue);
+    background-color: var(--primary-color);
     color: white;
     padding: 12px 15px;
     text-align: left;
@@ -1611,7 +1911,7 @@ html {
 }
 
 .best-price-row {
-    background-color: #d4edda; /* Success green */
+    background-color: #d4edda;
     font-weight: 700;
     border: 2px solid var(--color-success);
 }
@@ -1629,7 +1929,7 @@ html {
 .buy-link-button {
     display: inline-block;
     padding: 8px 15px;
-    background: var(--primary-blue);
+    background: var(--primary-color);
     color: white;
     text-decoration: none;
     border-radius: 4px;
@@ -1638,7 +1938,7 @@ html {
 }
 
 .buy-link-button:hover {
-    background: var(--primary-blue-dark);
+    background: var(--primary-dark);
 }
 
 .comparison-footer {
@@ -1651,56 +1951,56 @@ html {
 
 /* Responsive adjustments for comparison table */
 @media (max-width: 600px) {
-    .best-buy-table, 
-    .best-buy-table thead, 
-    .best-buy-table tbody, 
-    .best-buy-table th, 
-    .best-buy-table td, 
-    .best-buy-table tr { 
-        display: block; 
+    .best-buy-table,
+    .best-buy-table thead,
+    .best-buy-table tbody,
+    .best-buy-table th,
+    .best-buy-table td,
+    .best-buy-table tr {
+        display: block;
     }
-    
+
     .best-buy-table thead {
         position: absolute;
         top: -9999px;
         left: -9999px;
     }
-    
-    .best-buy-table tr { 
-        border: 1px solid #ccc; 
-        margin-bottom: 10px; 
-        border-radius: 8px; 
-        overflow: hidden; 
+
+    .best-buy-table tr {
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        overflow: hidden;
     }
-    
-    .best-buy-table td { 
+
+    .best-buy-table td {
         border: none;
-        border-bottom: 1px solid #eee; 
+        border-bottom: 1px solid #eee;
         position: relative;
-        padding-left: 50%; 
+        padding-left: 50%;
         text-align: right;
     }
-    
-    .best-buy-table td:before { 
+
+    .best-buy-table td:before {
         position: absolute;
         top: 0;
         left: 6px;
-        width: 45%; 
-        padding-right: 10px; 
+        width: 45%;
+        padding-right: 10px;
         white-space: nowrap;
         text-align: left;
         font-weight: 700;
         line-height: 2.5;
         color: var(--text-dark);
     }
-    
+
     /* Headers for mobile display */
     .best-buy-table tr.best-price-row { border: 2px solid var(--color-success); }
     .best-buy-table td:nth-of-type(1):before { content: "Platform"; }
     .best-buy-table td:nth-of-type(2):before { content: "Price"; }
     .best-buy-table td:nth-of-type(3):before { content: "Status"; }
     .best-buy-table td:nth-of-type(4):before { content: "Link"; }
-    
+
     .buy-link-button {
         display: block;
         text-align: center;
@@ -1733,8 +2033,8 @@ html {
 /* 2. Mobile Banner Styles (Top & Bottom) - Small UI Impact */
 .mobile-ad-banner {
     /* Use fixed max-height to ensure small UI impact, image will scale down */
-    max-height: 100px; 
-    width: 100%; 
+    max-height: 100px;
+    width: 100%;
     object-fit: contain; /* Ensures the ad image doesn't get distorted */
 }
 
@@ -1762,7 +2062,7 @@ html {
 
 /* 5. Desktop/Tablet Layout (Screen width > 1024px) */
 @media (min-width: 1024px) {
-    
+
     /* Reverse Visibility Control (Desktop) */
     .ad-unit.desktop-only {
         display: block; /* Show left/right sidebars */
@@ -1771,16 +2071,16 @@ html {
     .ad-unit.mobile-only {
         display: none !important; /* Hide top/bottom banners */
     }
-    
+
     /* Layout: 3-Column Grid */
     .ad-content-grid {
         display: grid;
         /* Left Ad (260px), Main Content (1fr), Right Ad (260px) */
-        grid-template-columns: 260px 1fr 260px; 
+        grid-template-columns: 260px 1fr 260px;
         gap: 30px;
         width: 100%;
     }
-    
+
     /* Position elements within the grid */
     .ad-left { grid-column: 1; }
     .feed-items { grid-column: 2; }
@@ -1792,10 +2092,27 @@ html {
         top: 100px; /* Sticks below the header */
         align-self: start; /* Ensures sidebars stick to the top */
     }
-    
+
     /* Ensure infinite scroll loading section aligns under the main feed */
     .load-more-section, #feed-end-message {
         grid-column: 2;
         width: 100%;
     }
+}
+.feed-item .thumbnail {
+    width: 120px;
+    height: 213px; /* Adjusted from 120px to fit 9:16 ratio */
+    flex-shrink: 0;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--background-light) 0%, var(--border-medium) 100%);
+}
+
+/* style.css - Around line 335: Category/Archive Grid Items */
+.category-thumbnail {
+    height: 498px; /* Adjusted from 180px to fit 9:16 ratio for the 280px minimum card width */
+    overflow: hidden;
+    position: relative;
+    background: linear-gradient(135deg, var(--background-light) 0%, var(--border-medium) 100%);
 }
