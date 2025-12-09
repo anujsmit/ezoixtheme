@@ -53,10 +53,11 @@ function render_feed_item()
             <?php if (has_post_thumbnail()) : ?>
                 <div class="item-thumbnail">
                     <a href="<?php echo esc_url($permalink); ?>">
-                        <?php the_post_thumbnail('feed-portrait', array(
+                        <?php the_post_thumbnail('feed-landscape', array(
                             'loading' => 'lazy',
                             'class' => 'feed-thumbnail'
                         )); ?>
+
                     </a>
                 </div>
             <?php else : ?>

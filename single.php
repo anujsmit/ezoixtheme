@@ -40,17 +40,34 @@
 
                     <div class="post-content">
                         <?php the_content(); ?>
-                        <!-- ACF Custom Fields (if used) -->
                         <?php if (function_exists('get_field')) : ?>
-                            <?php if (get_field('specifications')) : ?>
-                                <div class="acf-section">
+                            <?php $specs_data = get_field('specifications'); ?>
+                            <?php if ($specs_data) : ?>
+                                <div class="acf-section specifications-section">
                                     <h3 class="acf-section-title">Specifications</h3>
                                     <ul class="specs-list">
                                         <?php
-                                        $specs = get_field('specifications');
-                                        foreach ($specs as $spec) : ?>
-                                            <li><span class="spec-label"><?php echo esc_html($spec['label']); ?>:</span> <?php echo esc_html($spec['value']); ?></li>
-                                        <?php endforeach; ?>
+                                        // Loop through the main repeater (Categories)
+                                        foreach ($specs_data as $category_group) :
+                                            // Check if the inner repeater (Items) exists and is not empty
+                                            if (!empty($category_group['items']) && is_array($category_group['items'])) :
+                                        ?>
+                                                <li class="spec-category-header">
+                                                    <strong><?php echo esc_html($category_group['category']); ?></strong>
+                                                </li>
+                                                <?php
+                                                // Loop through the inner repeater (Key/Value pairs)
+                                                foreach ($category_group['items'] as $spec) :
+                                                    // Use 'key' and 'value' (from acf-mobile-fields.php) and check if they exist
+                                                    $spec_key = isset($spec['key']) ? $spec['key'] : '';
+                                                    $spec_value = isset($spec['value']) ? $spec['value'] : '';
+                                                ?>
+                                                    <li><span class="spec-label"><?php echo esc_html($spec_key); ?>:</span> <?php echo esc_html($spec_value); ?></li>
+                                                <?php endforeach; ?>
+                                        <?php 
+                                            endif;
+                                        endforeach; 
+                                        ?>
                                     </ul>
                                 </div>
                             <?php endif; ?>

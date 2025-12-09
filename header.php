@@ -36,19 +36,10 @@
                     ));
                     ?>
                 </nav>
-
-                <div class="header-controls">
-                    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">🌙</button>
-
-                    <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="main-navigation">
-                        <span class="menu-icon">☰</span>
-                    </button>
-                </div>
             </div>
         </div>
     </header>
 
-    <!-- Hero Section - Only on front page -->
     <?php if (is_front_page()) : ?>
     <section class="hero-section">
         <div class="container">
@@ -74,5 +65,4 @@
     </section>
     <?php endif; ?>
 
-    <!-- Main Content Wrapper -->
     <main id="main-content" class="site-main">

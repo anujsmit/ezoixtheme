@@ -162,16 +162,38 @@ get_header(); ?>
             </main>
             <aside class="device-sidebar">
                     <?php
-                    // NEW: Similar Devices Widget
-                    if (function_exists('ezoix_get_similar_mobile_devices')) :
-                        $similar_devices = ezoix_get_similar_mobile_devices(get_the_ID(), 10);
+                    $current_post_id = get_the_ID();
+                    $device_limit = 10;
+                    $sidebar_devices = null;
+                    $widget_title = 'Similar Devices';
 
-                        if ($similar_devices->have_posts()) :
+                    if (function_exists('ezoix_get_similar_mobile_devices')) :
+                        // 1. Try to get similar devices
+                        $sidebar_devices = ezoix_get_similar_mobile_devices($current_post_id, $device_limit);
+                        
+                        // 2. Fallback: If no similar devices found, get random devices
+                        if (!$sidebar_devices->have_posts()) {
+                            // Reset query to run a new random query
+                            wp_reset_query(); 
+                            
+                            $sidebar_devices = new WP_Query(array(
+                                'post_type'      => 'mobile_device',
+                                'post_status'    => 'publish',
+                                'posts_per_page' => $device_limit,
+                                'post__not_in'   => array($current_post_id),
+                                'orderby'        => 'rand',
+                                'no_found_rows'  => true,
+                            ));
+                            $widget_title = 'Other Popular Devices';
+                        }
+                    
+                        // 3. Proceed only if we have posts (either similar or random)
+                        if ($sidebar_devices->have_posts()) :
                     ?>
                             <div class="similar-devices-widget sidebar-widget">
-                                <h3 class="widget-title">Similar Devices</h3>
+                                <h3 class="widget-title"><?php echo esc_html($widget_title); ?></h3>
                                 <ul class="similar-devices-list">
-                                    <?php while ($similar_devices->have_posts()) : $similar_devices->the_post();
+                                    <?php while ($sidebar_devices->have_posts()) : $sidebar_devices->the_post();
                                         $price = function_exists('get_field') ? get_field('device_price') : '';
                                     ?>
                                         <li>
@@ -231,6 +253,7 @@ get_header(); ?>
                             <?php endif; ?>
                         </div>
                     <?php endif; ?>
+
                 </aside>
         </div>
     </div>

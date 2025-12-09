@@ -1,8 +1,7 @@
 <?php
 /**
  * Template Name: Mobile Brands Archive
- * 
- * @package Ezoix_Tech_Blog
+ * * @package Ezoix_Tech_Blog
  */
 
 get_header(); ?>
@@ -11,7 +10,6 @@ get_header(); ?>
     <div class="content-area">
         <main class="main-content">
             
-            <!-- Archive Header -->
             <header class="archive-header">
                 <?php 
                 $term = get_queried_object();
@@ -51,7 +49,6 @@ get_header(); ?>
                 </div>
             </header>
             
-            <!-- Filters (Only show on taxonomy pages) -->
             <?php if (is_tax('mobile_brand')) : ?>
             <div class="mobile-filters">
                 <div class="filter-section">
@@ -86,7 +83,6 @@ get_header(); ?>
             </div>
             <?php endif; ?>
             
-            <!-- Devices Grid -->
             <div class="mobile-devices-grid">
                 <?php if (have_posts()) : ?>
                     
@@ -96,18 +92,21 @@ get_header(); ?>
                             $device_status = get_field('device_status');
                             $device_rating = get_field('device_rating');
                             $specifications = get_field('specifications');
+                            $author_name = get_the_author();
                         ?>
                         <article class="mobile-device-card">
                             <div class="device-image">
-                                <?php if (has_post_thumbnail()) : ?>
-                                    <a href="<?php the_permalink(); ?>">
-                                        <?php the_post_thumbnail('medium', array('loading' => 'lazy')); ?>
-                                    </a>
-                                <?php else : ?>
-                                    <div class="no-image">
-                                        <span class="dashicons dashicons-smartphone"></span>
+                                <a href="<?php the_permalink(); ?>">
+                                    <div class="thumbnail-aspect-ratio-box">
+                                        <?php if (has_post_thumbnail()) : ?>
+                                            <?php the_post_thumbnail('grid-portrait', array('loading' => 'lazy', 'class' => 'category-post-thumbnail')); ?>
+                                        <?php else : ?>
+                                            <div class="placeholder-content">
+                                                <span class="placeholder-icon dashicons dashicons-smartphone"></span>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
-                                <?php endif; ?>
+                                </a>
                                 
                                 <?php if ($device_status) : ?>
                                     <span class="device-status status-<?php echo esc_attr($device_status); ?>">
@@ -121,92 +120,27 @@ get_header(); ?>
                                     <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
                                 </h2>
                                 
-                                <?php if ($device_price) : ?>
-                                <div class="device-price">
-                                    <span class="price-label">Price:</span>
-                                    <span class="price-value"><?php echo esc_html($device_price); ?></span>
-                                </div>
-                                <?php endif; ?>
-                                
-                                <div class="device-meta">
-                                    <?php
-                                    $brands = get_the_terms(get_the_ID(), 'mobile_brand');
-                                    if ($brands && !is_wp_error($brands)) :
-                                        echo '<span class="device-brand">';
-                                        foreach ($brands as $brand) {
-                                            echo esc_html($brand->name);
-                                            break;
-                                        }
-                                        echo '</span>';
-                                    endif;
-                                    ?>
-                                    
-                                    <?php
-                                    $categories = get_the_terms(get_the_ID(), 'mobile_category');
-                                    if ($categories && !is_wp_error($categories)) :
-                                        echo '<span class="device-category">';
-                                        $category_names = array();
-                                        foreach ($categories as $category) {
-                                            $category_names[] = esc_html($category->name);
-                                        }
-                                        echo implode(', ', $category_names);
-                                        echo '</span>';
-                                    endif;
-                                    ?>
-                                </div>
-                                
-                                <?php if ($device_rating) : ?>
-                                <div class="device-rating">
-                                    <div class="stars">
-                                        <?php
-                                        $rating = floatval($device_rating) / 2; // Convert 10-point to 5-point
-                                        $full_stars = floor($rating);
-                                        $half_star = ($rating - $full_stars) >= 0.5;
-                                        $empty_stars = 5 - $full_stars - ($half_star ? 1 : 0);
-                                        
-                                        for ($i = 0; $i < $full_stars; $i++) {
-                                            echo '<span class="star full">★</span>';
-                                        }
-                                        if ($half_star) {
-                                            echo '<span class="star half">★</span>';
-                                        }
-                                        for ($i = 0; $i < $empty_stars; $i++) {
-                                            echo '<span class="star empty">★</span>';
-                                        }
-                                        ?>
-                                    </div>
-                                    <span class="rating-value"><?php echo number_format($rating, 1); ?>/5</span>
-                                </div>
-                                <?php endif; ?>
-                                
-                                <?php if ($specifications) : 
-                                    $quick_spec = '';
-                                    foreach ($specifications as $spec) {
-                                        if (isset($spec['category']) && $spec['category'] === 'Display' && isset($spec['items'][0])) {
-                                            $quick_spec = $spec['items'][0]['value'];
-                                            break;
-                                        }
-                                    }
-                                    
-                                    if (!$quick_spec && isset($specifications[0]['items'][0])) {
-                                        $quick_spec = $specifications[0]['items'][0]['value'];
-                                    }
-                                    
-                                    if ($quick_spec) : ?>
-                                    <div class="device-quick-spec">
-                                        <span class="spec-label">Display:</span>
-                                        <span class="spec-value"><?php echo esc_html($quick_spec); ?></span>
-                                    </div>
+                                <div class="item-meta-yt">
+                                    <p class="author-name"><?php echo esc_html($author_name); ?></p>
+
+                                    <p class="post-date">
+                                    <?php if ($device_price) : ?>
+                                        <span class="price-value"><?php echo esc_html($device_price); ?></span>
                                     <?php endif; ?>
-                                <?php endif; ?>
+                                    <?php if ($device_rating) : 
+                                        $rating = floatval($device_rating) / 2;
+                                        if ($device_price) echo ' &bull; ';
+                                    ?>
+                                        <span class="rating-value">⭐ <?php echo number_format($rating, 1); ?>/5</span>
+                                    <?php endif; ?>
+                                    </p>
+                                </div>
                                 
-                                <a href="<?php the_permalink(); ?>" class="view-details">View Details →</a>
-                            </div>
+                                </div>
                         </article>
                         <?php endwhile; ?>
                     </div>
                     
-                    <!-- Pagination -->
                     <div class="pagination">
                         <?php
                         the_posts_pagination(array(
@@ -237,7 +171,6 @@ get_header(); ?>
             
         </main>
         
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-widget">
                 <h3 class="widget-title">All Brands</h3>

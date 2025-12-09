@@ -4,11 +4,11 @@ Description: A modern tech blog theme for ezoix.com
 Version: 1.0.4
 */
 
-/* ===== CSS VARIABLES - LIGHT MODE (Original) ===== */
+/* ===== CSS VARIABLES - LIGHT MODE (UPDATED TO BLUE/ORANGE) ===== */
 :root {
-    --primary-color: #009688; /* Deep Teal/Cyan - Modern & Professional */
-    --primary-light: #e0f2f1; /* Very Light Teal for backgrounds */
-    --primary-dark: #00796b; /* Darker Teal for hover states */
+    --primary-color: #007BFF; /* Vibrant Blue */
+    --primary-light: #e6f2ff; /* Very Light Blue for backgrounds */
+    --primary-dark: #0056b3; /* Darker Blue for hover states */
     --text-dark: #1f2937;    /* Dark Slate Grey for high contrast */
     --text-medium: #4b5563;
     --text-light: #9ca3af;
@@ -20,15 +20,15 @@ Version: 1.0.4
     --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.1);
     --radius: 8px;
     --transition: all 0.3s ease;
-    --color-success: #10b981;
-    --color-danger: #ef4444;
-    --color-warning: #f59e0b;
-    --color-info: #3b82f6;
-    --color-rating: #fbbf24;
+    --color-success: #28a745; /* Green */
+    --color-danger: #dc3545; /* Red */
+    --color-warning: #ffc107; /* Yellow */
+    --color-info: #17a2b8; /* Cyan */
+    --color-rating: #FF8C00; /* Dark Orange */
 
-    /* Custom Gradients - Updated to Teal/Blue */
-    --gradient-device-header: linear-gradient(135deg, var(--primary-dark) 0%, var(--color-info) 100%);
-    --gradient-category-header: linear-gradient(135deg, #a78bfa 0%, var(--primary-color) 100%);
+    /* Custom Gradients - Updated to Blue/Cyan/Purple */
+    --gradient-device-header: linear-gradient(135deg, var(--primary-dark) 0%, var(--color-info) 100%); /* Dark Blue to Cyan */
+    --gradient-category-header: linear-gradient(135deg, #6f42c1 0%, var(--primary-color) 100%); /* Purple to Vibrant Blue */
 }
 
 /* ===== THEME TOGGLE BUTTON (NEW) ===== */
@@ -58,10 +58,10 @@ Version: 1.0.4
 /* DARK MODE                                 */
 /* -------------------------------------------------------------------------- */
 body.dark-mode {
-    /* Dark Mode Variables */
-    --primary-color: #4db6ac;
-    --primary-light: #1e3a38;
-    --primary-dark: #26a69a;
+    /* Dark Mode Variables - UPDATED */
+    --primary-color: #6daafb; /* Lighter Blue */
+    --primary-light: #1e3a38; /* Keep dark background */
+    --primary-dark: #0056b3; /* Darker Blue */
     --text-dark: #f0f4f8;
     --text-medium: #a7b7c9;
     --text-light: #6b7280;
@@ -215,11 +215,11 @@ body.dark-mode .spec-row:hover {
 
 /* Pros & Cons */
 body.dark-mode .pros-section {
-    background: rgba(16, 185, 129, 0.15);
+    background: rgba(16, 185, 129, 0.15); /* Keep green for success */
     border-left-color: var(--color-success);
 }
 body.dark-mode .cons-section {
-    background: rgba(239, 68, 68, 0.15);
+    background: rgba(239, 68, 68, 0.15); /* Keep red for danger */
     border-left-color: var(--color-danger);
 }
 body.dark-mode .pros-section li, body.dark-mode .cons-section li {
@@ -492,7 +492,7 @@ img {
     gap: 25px;
 }
 
-/* ===== INDEX.PHP FEED ITEMS ===== */
+/* ===== INDEX.PHP FEED ITEMS (UPDATED FOR 16:9) ===== */
 .feed-items {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -511,7 +511,8 @@ img {
     position: relative;
     overflow: hidden;
     display: grid;
-    grid-template-columns: 120px 1fr;
+    /* Adjusted grid to accommodate new landscape thumbnail size (e.g., 213px width for 120px height) */
+    grid-template-columns: auto 1fr; 
     gap: 20px;
     align-items: start;
     min-height: 140px;
@@ -523,13 +524,13 @@ img {
     border-color: var(--primary-color);
 }
 
-/* Thumbnail */
+/* Thumbnail - ADJUSTED HEIGHT for 16:9 on 120px width for visual consistency */
 .feed-item .thumbnail {
-    width: 120px;
-    height: 120px;
+    width: 120px; 
+    height: 67.5px; /* 16:9 ratio on 120px width (120 * 9 / 16) - approx 70px */
     flex-shrink: 0;
     position: relative;
-    border-radius: 8px; /* Adjusted to match new radius var */
+    border-radius: 8px; 
     overflow: hidden;
     background: linear-gradient(135deg, var(--background-light) 0%, var(--border-medium) 100%);
 }
@@ -748,9 +749,9 @@ img {
     border-color: var(--primary-color);
 }
 
-/* Category Thumbnail */
+/* Category Thumbnail - ADJUSTED HEIGHT for 16:9 on min 280px width */
 .category-thumbnail {
-    height: 180px;
+    height: 157.5px; /* 16:9 ratio on 280px width (280 * 9 / 16) */
     overflow: hidden;
     position: relative;
     background: linear-gradient(135deg, var(--background-light) 0%, var(--border-medium) 100%);
@@ -1074,11 +1075,11 @@ img {
 }
 
 /* Status Colors */
-.status-available { background-color: rgba(16, 185, 129, 0.9); color: white; } /* Green */
-.status-upcoming { background-color: rgba(59, 130, 246, 0.9); color: white; } /* Blue */
+.status-available { background-color: rgba(40, 167, 69, 0.9); color: white; } /* Green (Updated to standard green) */
+.status-upcoming { background-color: rgba(0, 123, 255, 0.9); color: white; } /* Blue (Updated to match new primary color) */
 .status-discontinued { background-color: rgba(107, 114, 128, 0.9); color: white; } /* Grey */
 .status-rumored { background-color: rgba(139, 92, 246, 0.9); color: white; } /* Violet */
-.status-unknown { background-color: rgba(245, 158, 11, 0.9); color: var(--text-dark); } /* Amber */
+.status-unknown { background-color: rgba(255, 193, 7, 0.9); color: var(--text-dark); } /* Amber (Updated to match new warning color) */
 
 
 /* Sidebar Widgets */
@@ -1143,8 +1144,7 @@ img {
 .pros-section {
     padding: 20px;
     border-radius: var(--radius);
-    background: var(--color-success);
-    background: rgba(16, 185, 129, 0.1); /* Light Green BG */
+    background: rgba(40, 167, 69, 0.1); /* Light Green BG */
     border-left: 4px solid var(--color-success);
 }
 
@@ -1162,7 +1162,7 @@ img {
 
 .pros-section li, .cons-section li {
     padding: 8px 0;
-    border-bottom: 1px dashed rgba(46, 204, 113, 0.3);
+    border-bottom: 1px dashed rgba(40, 167, 69, 0.3);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -1172,7 +1172,7 @@ img {
 .cons-section {
     padding: 20px;
     border-radius: var(--radius);
-    background: rgba(239, 68, 68, 0.1); /* Light Red BG */
+    background: rgba(220, 53, 69, 0.1); /* Light Red BG */
     border-left: 4px solid var(--color-danger);
 }
 
@@ -1610,7 +1610,7 @@ img {
 
     .feed-item .thumbnail {
         width: 100%;
-        height: 250px; /* Maintain vertical look on mobile */
+        height: 170px; /* Adjusted to a landscape value for mobile */
     }
 
     .feed-item .item-title {
@@ -1653,7 +1653,7 @@ img {
     }
 
     .category-thumbnail {
-        height: 390px; /* Adjusted height for mobile grid item to maintain vertical look */
+        height: 123.75px; /* 16:9 ratio on 220px width for mobile grid item */
     }
 
     .category-post-content {
@@ -1729,7 +1729,7 @@ img {
     }
 
     .category-thumbnail {
-        height: 170px;
+        height: 170px; /* A safe landscape height for single column mobile */
     }
 
     .single-post-title {
@@ -1770,7 +1770,7 @@ img {
     }
 
     .feed-items .feed-item .thumbnail {
-        height: 130px;
+        height: 130px; /* Adjusted landscape height */
     }
 
     .hero-title {
@@ -1892,7 +1892,7 @@ html {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 15px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 2, 8px rgba(0,0,0,0.05);
 }
 
 .best-buy-table th {
@@ -2099,9 +2099,10 @@ html {
         width: 100%;
     }
 }
+/* Overwriting the old 9:16 styles from the end of the original file */
 .feed-item .thumbnail {
     width: 120px;
-    height: 213px; /* Adjusted from 120px to fit 9:16 ratio */
+    height: 67.5px; /* 16:9 ratio on 120px width */
     flex-shrink: 0;
     position: relative;
     border-radius: 8px;
@@ -2109,10 +2110,17 @@ html {
     background: linear-gradient(135deg, var(--background-light) 0%, var(--border-medium) 100%);
 }
 
-/* style.css - Around line 335: Category/Archive Grid Items */
+/* style.css - Overwriting the old 9:16 styles from the end of the original file */
 .category-thumbnail {
-    height: 498px; /* Adjusted from 180px to fit 9:16 ratio for the 280px minimum card width */
+    height: 157.5px; /* 16:9 ratio on 280px width */
+    
     overflow: hidden;
     position: relative;
     background: linear-gradient(135deg, var(--background-light) 0%, var(--border-medium) 100%);
+}
+.category-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Crops image to fill container */
+    object-position: center; /* Centers the cropped area */
 }

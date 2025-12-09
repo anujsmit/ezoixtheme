@@ -56,13 +56,14 @@ function ezoix_theme_setup()
     add_image_size('desktop-thumbnail', 800, 400, true);
     add_image_size('featured-image', 1200, 600, true);
     add_image_size('hero-image', 1920, 800, true);
+    add_image_size('featured-image', 1200, 600, true);
+    add_image_size('hero-image', 1920, 800, true);
 
     // NEW: 9:16 Portrait Aspect Ratio Sizes
-    add_image_size('feed-portrait', 120, 213, true);   // For side-by-side feed items (120 x 213px)
-    add_image_size('grid-portrait', 280, 498, true);   // For archive grid cards (280 x 498px)
+    add_image_size('feed-landscape', 120, 67.5, true);
+    add_image_size('grid-landscape', 280, 157.5, true);
 
     load_theme_textdomain('ezoix', get_template_directory() . '/languages');
-    // ...
 
     ezoix_register_mobile_device_cpt();
     ezoix_register_mobile_taxonomies();
@@ -791,10 +792,8 @@ function ezoix_infinite_scroll_posts()
                 $meta_right = '<span class="meta-item read-item"><span class="meta-icon">⏱️</span><span class="meta-text">' . esc_html($reading_time) . ' min</span></span>';
             }
         ?>
-            <!-- Unified Feed Item for AJAX Loading -->
             <article class="feed-item<?php echo $item_type_class; ?>" data-type="<?php echo esc_attr($post_type); ?>" data-date="<?php echo get_the_date('Y-m-d H:i:s'); ?>">
 
-                <!-- Thumbnail Section -->
                 <div class="thumbnail">
                     <?php if (has_post_thumbnail()) : ?>
                         <div class="item-thumbnail">
@@ -806,16 +805,13 @@ function ezoix_infinite_scroll_posts()
                             </a>
                         </div>
                     <?php else : ?>
-                        <!-- Cool placeholder when no featured image -->
                         <div class="item-thumbnail">
                             <a href="<?php echo esc_url($permalink); ?>">
-                                <!-- CSS will handle the placeholder styling -->
                             </a>
                         </div>
                     <?php endif; ?>
                 </div>
 
-                <!-- Content Section -->
                 <div class="item-details">
                     <h2 class="item-title">
                         <a href="<?php echo esc_url($permalink); ?>"><?php echo esc_html($title); ?></a>
@@ -825,7 +821,6 @@ function ezoix_infinite_scroll_posts()
                         <?php echo esc_html($excerpt); ?>
                     </p>
 
-                    <!-- Footer inside details for better alignment -->
                     <div class="item-footer">
                         <div class="footer-left">
                             <span class="footer-text">
@@ -1480,151 +1475,6 @@ function ezoix_mobile_device_template($template)
 }
 add_filter('template_include', 'ezoix_mobile_device_template', 99);
 
-/**
- * Add custom CSS for mobile specs (Original code)
- */
-function ezoix_mobile_specs_styles()
-{
-    if (is_singular('mobile_device') || is_post_type_archive('mobile_device') || is_tax(array('mobile_brand', 'mobile_category'))) {
-        $css = '
-        .mobile-specs-container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: #fff;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
-        }
-        
-        .device-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .device-name, .device-title {
-            color: white;
-            margin: 0;
-            font-size: 32px;
-            font-weight: 700;
-        }
-        
-        .device-meta {
-            margin-top: 15px;
-            color: rgba(255,255,255,0.9);
-        }
-        
-        .device-meta span {
-            margin: 0 10px;
-            padding: 5px 10px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 20px;
-            font-size: 14px;
-        }
-        
-        .specs-table-wrapper {
-            padding: 30px;
-        }
-        
-        .mobile-specs-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 16px;
-        }
-        
-        .specs-section-header {
-            background: #f8f9fa;
-            padding: 20px;
-            font-size: 24px;
-            color: #333;
-            text-align: center;
-        }
-        
-        .category-header {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-        
-        .category-title {
-            color: white;
-            margin: 0;
-            padding: 15px 20px;
-            font-size: 20px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .spec-row {
-            border-bottom: 1px solid #eaeaea;
-            transition: background 0.3s ease;
-        }
-        
-        .spec-row:hover {
-            background: #f9f9f9;
-        }
-        
-        .spec-label {
-            padding: 15px 20px;
-            width: 35%;
-            font-weight: 600;
-            color: #555;
-            border-right: 1px solid #eaeaea;
-            background: #f8f9fa;
-        }
-        
-        .spec-value {
-            padding: 15px 20px;
-            color: #333;
-        }
-        
-        .separator td {
-            padding: 10px;
-            background: #f8f9fa;
-        }
-        
-        .affiliate-links-section {
-            padding: 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            text-align: center;
-        }
-        
-        .section-title {
-            color: white;
-            margin: 0 0 20px 0;
-            font-size: 24px;
-        }
-        
-        .affiliate-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-        }
-        
-        .affiliate-button {
-            display: inline-block;
-            padding: 15px 30px;
-            background: white;
-            color: #667eea;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-        
-        .affiliate-button:hover {
-            background: transparent;
-            color: white;
-            border-color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        ';
-
-        wp_add_inline_style('ezoix-style', $css);
-    }
-}
-add_action('wp_enqueue_scripts', 'ezoix_mobile_specs_styles');
 
 /**
  * Shortcode to display mobile specs by ID (Original code)
@@ -2350,6 +2200,155 @@ function ezoix_mobile_specs_admin_page_enhanced()
         }
     </style>
 
+    <div class="json-example-section">
+        <h2>JSON Format Example</h2>
+        <p>Use this format for your JSON files:</p>
+
+        <pre><code>{
+  "device_name": "Samsung Galaxy S25 Ultra",
+  "model": "SM-S928",
+  "release_date": "2024-01-15",
+  "price": "$1299",
+  "status": "available",
+  "rating": 8.5,
+  "description": "The latest flagship from Samsung with advanced features.",
+  
+  "specifications": {
+    "display": {
+      "size": "6.8 inches",
+      "resolution": "1440 x 3200 pixels",
+      "type": "Dynamic AMOLED 2X",
+      "refresh_rate": "120Hz",
+      "protection": "Corning Gorilla Glass Victus+"
+    },
+    "camera": {
+      "main": "200 MP, f/1.7",
+      "ultra_wide": "12 MP, f/2.2",
+      "telephoto": "10 MP, f/2.4 (3x optical zoom)",
+      "front": "40 MP, f/2.2"
+    },
+    "hardware": {
+      "chipset": "Snapdragon 8 Gen 3",
+      "cpu": "Octa-core",
+      "gpu": "Adreno 750",
+      "ram": "12GB",
+      "storage": "256GB/512GB/1TB",
+      "battery": "5000 mAh",
+      "charging": "45W wired, 15W wireless"
+    },
+    "connectivity": {
+      "network": "5G",
+      "wifi": "Wi-Fi 6E",
+      "bluetooth": "5.3",
+      "usb": "USB Type-C 3.2"
+    }
+  },
+  
+  "affiliate_links": {
+    "amazon": {
+      "url": "https://amazon.com/samsung-s25-ultra",
+      "price": "$1299"
+    },
+    "flipkart": {
+      "url": "https://flipkart.com/samsung-s25-ultra",
+      "price": "₹1,29,999"
+    }
+  },
+  
+  "pros": [
+    "Excellent display quality",
+    "Powerful performance",
+    "Great camera system",
+    "Long battery life"
+  ],
+  
+  "cons": [
+    "Expensive",
+    "Heavy and bulky",
+    "No charger in box"
+  ]
+}</code></pre>
+    </div>
+    </div>
+
+    <style>
+        .wrap {
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+
+        .json-upload-section,
+        .bulk-import-section,
+        .json-example-section,
+        .quick-actions-section,
+        .stats-section {
+            background: white;
+            padding: 25px;
+            margin: 20px 0;
+            border: 1px solid #ccd0d4;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .json-example-section pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.5;
+            margin: 15px 0;
+        }
+
+        .json-example-section code {
+            background: none;
+            padding: 0;
+        }
+
+        .quick-action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .quick-action-buttons .button {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stats-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .stats-section li {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #0073aa;
+        }
+
+        @media (max-width: 768px) {
+            .stats-section ul {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-action-buttons {
+                flex-direction: column;
+            }
+
+            .quick-action-buttons .button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
 <?php
 }
 

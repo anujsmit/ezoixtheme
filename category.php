@@ -12,69 +12,54 @@
                         </div>
                     <?php endif; ?>
                 </div>
-                
+
                 <div class="category-posts-grid">
-                    <?php while (have_posts()) : the_post(); ?>
+                    <?php while (have_posts()) : the_post();
+                        $author_name = get_the_author();
+                    ?>
                         <article class="category-post-card">
-                            <!-- Thumbnail with placeholder -->
                             <div class="category-thumbnail">
                                 <a href="<?php the_permalink(); ?>">
-                                    <?php if (has_post_thumbnail()) : ?>
-                                        <?php
-                                        the_post_thumbnail('grid-portrait', array(
-                                            'loading' => 'lazy',
-                                            'alt' => get_the_title(),
-                                            'class' => 'category-post-thumbnail'
-                                        ));
-                                        ?>
-                                    <?php else : ?>
-                                        <!-- Cool placeholder for missing image -->
-                                        <div class="category-thumbnail-placeholder">
-                                            <span class="placeholder-icon">📝</span>
-                                            <span class="category-placeholder-cat"><?php 
-                                                $categories = get_the_category();
-                                                if (!empty($categories)) {
-                                                    echo esc_html($categories[0]->name);
-                                                }
-                                            ?></span>
-                                        </div>
-                                    <?php endif; ?>
+                                    <div class="thumbnail-aspect-ratio-box">
+                                        <?php if (has_post_thumbnail()) : ?>
+                                            <?php
+                                            the_post_thumbnail('grid-landscape', array(
+                                                'loading' => 'lazy',
+                                                'alt' => get_the_title(),
+                                                'class' => 'category-post-thumbnail'
+                                            ));
+                                            ?>
+                                        <?php else : ?>
+                                            <div class="placeholder-content">
+                                                <span class="placeholder-icon">📺</span>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
                                 </a>
                             </div>
-                            
+
                             <div class="category-post-content">
                                 <h3 class="category-post-title">
                                     <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
                                 </h3>
-                                
-                                <div class="category-post-meta">
-                                    <span class="post-date">
-                                        <span class="meta-icon">📅</span>
+
+                                <div class="item-meta-yt">
+                                    <p class="author-name"><?php echo esc_html($author_name); ?></p>
+                                    <p class="post-date">
                                         <?php echo get_the_date('M j, Y'); ?>
-                                    </span>
-                                    <span class="post-read-time">
-                                        <span class="meta-icon">⏱️</span>
+                                        &bull;
                                         <?php
                                         $word_count = str_word_count(strip_tags(get_the_content()));
                                         $reading_time = ceil($word_count / 200);
-                                        echo $reading_time . ' min';
+                                        echo '⏱️ ' . $reading_time . ' min';
                                         ?>
-                                    </span>
+                                    </p>
                                 </div>
-                                
-                                <p class="category-post-excerpt">
-                                    <?php echo wp_trim_words(get_the_excerpt(), 20); ?>
-                                </p>
-                                
-                                <a href="<?php the_permalink(); ?>" class="category-read-more">
-                                    Read Article →
-                                </a>
                             </div>
                         </article>
                     <?php endwhile; ?>
                 </div>
 
-                <!-- Pagination -->
                 <div class="pagination">
                     <?php
                     echo paginate_links(array(
