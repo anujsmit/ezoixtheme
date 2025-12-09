@@ -723,6 +723,106 @@ function ezoix_get_total_pages_for_merged_feed()
 }
 
 /**
+ * Helper function to render a unified feed item card (article or mobile device) in grid format.
+ * This replaces the old render_feed_item logic.
+ */
+function ezoix_render_grid_card()
+{
+    $post_id = get_the_ID();
+    $post_type = get_post_type();
+    $author_name = get_the_author();
+    $permalink = get_the_permalink();
+    $title = get_the_title();
+
+    // --- Mobile Device Specific Data ---
+    $price = (function_exists('get_field') && $post_type === 'mobile_device') ? get_field('device_price', $post_id) : null;
+    $rating = (function_exists('get_field') && $post_type === 'mobile_device') ? get_field('device_rating', $post_id) : null;
+
+    // Calculate display rating (10-point scale to 5-point scale)
+    $display_rating = $rating ? number_format(floatval($rating) / 2, 1) : null;
+
+    // Set placeholder based on post type
+    $placeholder_icon = ($post_type === 'mobile_device') ? '📱' : '📝';
+
+    // Calculate reading time or primary spec
+    $meta_right_content = '';
+    if ($post_type === 'mobile_device') {
+        // Display Price/Rating
+        if ($price) {
+            $meta_right_content .= '💵 ' . esc_html($price);
+        }
+        if ($display_rating) {
+            if ($meta_right_content) $meta_right_content .= ' &bull; ';
+            $meta_right_content .= '⭐ ' . $display_rating . '/5';
+        }
+    } else {
+        // Default blog post reading time
+        $word_count = str_word_count(strip_tags(get_the_content()));
+        $reading_time = ceil($word_count / 200);
+        $meta_right_content = '⏱️ ' . $reading_time . ' min';
+    }
+    ?>
+    <article class="category-post-card" data-type="<?php echo esc_attr($post_type); ?>">
+        <div class="category-thumbnail">
+            <a href="<?php the_permalink(); ?>">
+                <div class="thumbnail-aspect-ratio-box">
+                    <?php if (has_post_thumbnail()) : ?>
+                        <?php 
+                        // Using grid-landscape size (280x157.5, 16:9)
+                        the_post_thumbnail('grid-landscape', array(
+                            'loading' => 'lazy',
+                            'alt' => get_the_title(),
+                            'class' => 'category-post-thumbnail'
+                        ));
+                        ?>
+                    <?php else : ?>
+                        <div class="placeholder-content category-thumbnail-placeholder">
+                            <span class="placeholder-icon"><?php echo esc_html($placeholder_icon); ?></span>
+                            <span class="category-placeholder-cat">
+                                <?php 
+                                if ($post_type === 'mobile_device') {
+                                    echo 'DEVICE';
+                                } else {
+                                    $categories = get_the_category();
+                                    echo !empty($categories) ? esc_html(strtoupper($categories[0]->name)) : 'ARTICLE';
+                                }
+                                ?>
+                            </span>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </a>
+        </div>
+
+        <div class="category-post-content">
+            <h3 class="category-post-title">
+                <a href="<?php the_permalink(); ?>"><?php echo esc_html($title); ?></a>
+            </h3>
+
+            <div class="item-meta-yt">
+                <p class="author-name"><?php echo esc_html($author_name); ?></p>
+                <p class="post-date">
+                    <?php echo get_the_date('M j, Y'); ?>
+                    <?php if ($meta_right_content) : ?>
+                        &bull; <?php echo $meta_right_content; ?>
+                    <?php endif; ?>
+                </p>
+            </div>
+            
+            <p class="category-post-excerpt">
+                <?php echo wp_trim_words(get_the_excerpt(), 18); // Shorter excerpt for grid layout ?>
+            </p>
+
+            <a href="<?php the_permalink(); ?>" class="category-read-more">
+                Read More →
+            </a>
+        </div>
+    </article>
+<?php
+}
+
+
+/**
  * AJAX handler for infinite scroll - NOW MERGED TO HANDLE BOTH POST TYPES
  * This function handles the output for the new merged feed.
  */
@@ -754,89 +854,7 @@ function ezoix_infinite_scroll_posts()
 
     if ($query->have_posts()) :
         while ($query->have_posts()) : $query->the_post();
-            // Use the same unified structure from index.php (feed-item) for consistent display
-            // This logic is duplicated here from the newly created render_feed_item() in index.php
-            $post_type = get_post_type();
-            $categories = get_the_category();
-
-            // Shared details
-            $permalink = get_the_permalink();
-            $title = get_the_title();
-            $date = get_the_date('M j, Y');
-            $excerpt = wp_trim_words(get_the_excerpt(), 25);
-            $word_count = str_word_count(strip_tags(get_the_content()));
-            $reading_time = ceil($word_count / 200);
-
-            // --- Post Type Specific Data ---
-            $meta_right = '';
-            $item_type_class = '';
-
-            if ($post_type === 'mobile_device') {
-                $item_type_class = ' device-item';
-                $price = function_exists('get_field') ? get_field('device_price') : '';
-                $rating = function_exists('get_field') ? get_field('device_rating') : '';
-
-                // Prioritize Price/Rating for mobile devices
-                $meta_right = '';
-                if ($price) {
-                    $meta_right .= '<span class="meta-item price-item">💵 <span class="meta-text">' . esc_html($price) . '</span></span>';
-                }
-                if ($rating) {
-                    // Convert 10-point to 5-point for display
-                    $rating_value = number_format(floatval($rating) / 2, 1);
-                    $meta_right .= '<span class="meta-item rating-item">⭐ <span class="meta-text">' . esc_html($rating_value) . '/5</span></span>';
-                }
-            } else {
-                $item_type_class = ' article-item';
-                // Use reading time for standard posts
-                $meta_right = '<span class="meta-item read-item"><span class="meta-icon">⏱️</span><span class="meta-text">' . esc_html($reading_time) . ' min</span></span>';
-            }
-        ?>
-            <article class="feed-item<?php echo $item_type_class; ?>" data-type="<?php echo esc_attr($post_type); ?>" data-date="<?php echo get_the_date('Y-m-d H:i:s'); ?>">
-
-                <div class="thumbnail">
-                    <?php if (has_post_thumbnail()) : ?>
-                        <div class="item-thumbnail">
-                            <a href="<?php echo esc_url($permalink); ?>">
-                                <?php the_post_thumbnail('thumbnail', array(
-                                    'loading' => 'lazy',
-                                    'class' => 'feed-thumbnail'
-                                )); ?>
-                            </a>
-                        </div>
-                    <?php else : ?>
-                        <div class="item-thumbnail">
-                            <a href="<?php echo esc_url($permalink); ?>">
-                            </a>
-                        </div>
-                    <?php endif; ?>
-                </div>
-
-                <div class="item-details">
-                    <h2 class="item-title">
-                        <a href="<?php echo esc_url($permalink); ?>"><?php echo esc_html($title); ?></a>
-                    </h2>
-
-                    <p class="item-excerpt">
-                        <?php echo esc_html($excerpt); ?>
-                    </p>
-
-                    <div class="item-footer">
-                        <div class="footer-left">
-                            <span class="footer-text">
-                                <span class="footer-icon">📅</span>
-                                <?php echo esc_html($date); ?>
-                            </span>
-                        </div>
-                        <div class="footer-right">
-                            <div class="item-meta">
-                                <?php echo $meta_right; ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </article>
-        <?php
+            ezoix_render_grid_card(); // Call the unified card function
         endwhile;
         wp_reset_postdata();
     else :

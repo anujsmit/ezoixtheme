@@ -15,48 +15,8 @@
 
                 <div class="category-posts-grid">
                     <?php while (have_posts()) : the_post();
-                        $author_name = get_the_author();
+                        ezoix_render_grid_card(); // Use the new unified card function
                     ?>
-                        <article class="category-post-card">
-                            <div class="category-thumbnail">
-                                <a href="<?php the_permalink(); ?>">
-                                    <div class="thumbnail-aspect-ratio-box">
-                                        <?php if (has_post_thumbnail()) : ?>
-                                            <?php
-                                            the_post_thumbnail('grid-landscape', array(
-                                                'loading' => 'lazy',
-                                                'alt' => get_the_title(),
-                                                'class' => 'category-post-thumbnail'
-                                            ));
-                                            ?>
-                                        <?php else : ?>
-                                            <div class="placeholder-content">
-                                                <span class="placeholder-icon">📺</span>
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
-                                </a>
-                            </div>
-
-                            <div class="category-post-content">
-                                <h3 class="category-post-title">
-                                    <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
-                                </h3>
-
-                                <div class="item-meta-yt">
-                                    <p class="author-name"><?php echo esc_html($author_name); ?></p>
-                                    <p class="post-date">
-                                        <?php echo get_the_date('M j, Y'); ?>
-                                        &bull;
-                                        <?php
-                                        $word_count = str_word_count(strip_tags(get_the_content()));
-                                        $reading_time = ceil($word_count / 200);
-                                        echo '⏱️ ' . $reading_time . ' min';
-                                        ?>
-                                    </p>
-                                </div>
-                            </div>
-                        </article>
                     <?php endwhile; ?>
                 </div>
 

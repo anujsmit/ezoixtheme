@@ -135,8 +135,7 @@ get_header(); ?>
                                     <?php endif; ?>
                                     </p>
                                 </div>
-                                
-                                </div>
+                            </div> <!-- Closing div added -->
                         </article>
                         <?php endwhile; ?>
                     </div>
