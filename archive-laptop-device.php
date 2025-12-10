@@ -1,6 +1,6 @@
 <?php
 /**
- * Template Name: Mobile Brands Archive
+ * Template Name: laptop Brands Archive
  * * @package Ezoix_Tech_Blog
  */
 

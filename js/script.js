@@ -3,48 +3,30 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log('Ezoix Tech Blog loaded');
 
 
-    // ===== THEME TOGGLE (NEW) =====
-    const themeToggle = document.getElementById('theme-toggle');
-    const darkModeClass = 'dark-mode';
+    // ===== SCROLL TO TOP BUTTON =====
+    const scrollToTopBtn = document.getElementById('scrollToTop');
 
-    function isDarkModePreferred() {
-        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-
-    function applyTheme(isDark) {
-        if (isDark) {
-            document.body.classList.add(darkModeClass);
-            if (themeToggle) themeToggle.innerHTML = '🌞'; // Sun icon for switching to light mode
-        } else {
-            document.body.classList.remove(darkModeClass);
-            if (themeToggle) themeToggle.innerHTML = '🌙'; // Moon icon for switching to dark mode
-        }
-    }
-
-    // 1. Initial Load: Check local storage, then system preference
-    let savedTheme = localStorage.getItem('ezoix-theme');
-
-    if (savedTheme === 'dark') {
-        applyTheme(true);
-    } else if (savedTheme === 'light') {
-        applyTheme(false);
-    } else if (isDarkModePreferred()) {
-        applyTheme(true);
-    } else {
-        applyTheme(false);
-    }
-
-    // 2. Event Listener for manual toggle
-    if (themeToggle) {
-        themeToggle.addEventListener('click', function () {
-            const isDark = document.body.classList.contains(darkModeClass);
-            if (isDark) {
-                applyTheme(false);
-                localStorage.setItem('ezoix-theme', 'light');
+    if (scrollToTopBtn) {
+        function toggleScrollButton() {
+            if (window.pageYOffset > 300) {
+                scrollToTopBtn.classList.add('visible');
             } else {
-                applyTheme(true);
-                localStorage.setItem('ezoix-theme', 'dark');
+                scrollToTopBtn.classList.remove('visible');
             }
+        }
+
+        // Initial check
+        toggleScrollButton();
+
+        // Listen to scroll events
+        window.addEventListener('scroll', toggleScrollButton);
+
+        // Click handler
+        scrollToTopBtn.addEventListener('click', function () {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
         });
     }
 
@@ -129,33 +111,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Initialize lazy loading
     lazyLoadImages();
-
-    // ===== SCROLL TO TOP BUTTON =====
-    const scrollToTopBtn = document.getElementById('scrollToTop');
-
-    if (scrollToTopBtn) {
-        function toggleScrollButton() {
-            if (window.pageYOffset > 300) {
-                scrollToTopBtn.classList.add('visible');
-            } else {
-                scrollToTopBtn.classList.remove('visible');
-            }
-        }
-
-        // Initial check
-        toggleScrollButton();
-
-        // Listen to scroll events
-        window.addEventListener('scroll', toggleScrollButton);
-
-        // Click handler
-        scrollToTopBtn.addEventListener('click', function () {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-    }
 
     // ===== INFINITE SCROLL (UPDATED FOR AUTOMATIC LOADING) =====
     let isLoading = false;

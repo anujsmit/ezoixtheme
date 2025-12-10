@@ -24,7 +24,7 @@ RewriteBase /
 # ----------------------------------------------------------------------
 # 3. Error Documents
 # ----------------------------------------------------------------------
-ErrorDocument 404 /Notfound.php
+ErrorDocument 404 /this-page-does-not-exist.php
 
 # ----------------------------------------------------------------------
 # 4. Gzip Compression (mod_deflate)

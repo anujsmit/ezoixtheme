@@ -1,6 +1,5 @@
 <?php get_header(); ?>
 
-<!-- Add a wrapper div with the correct class -->
 <div class="container container-index">
     
     <main class="main-content">
@@ -12,7 +11,7 @@
 
             // 2. Get posts for the initial feed (Page 1)
             $feed_items = new WP_Query(array(
-                'post_type' => array('post', 'mobile_device'),
+                'post_type' => array('post', 'mobile_device', 'laptop_device'), // MODIFIED
                 'posts_per_page' => 15,
                 'orderby' => 'date',
                 'order' => 'DESC',

@@ -1187,7 +1187,7 @@ function ezoix_register_mobile_device_cpt()
 
     register_post_type('mobile_device', $args);
 }
-// REMOVED: Redundant function ezoix_mobile_device_template_redirect and its hook.
+// Removed redundant ezoix_mobile_device_template_redirect() function.
 
 function ezoix_include_cpt_in_category_archive($query)
 {
