@@ -570,7 +570,7 @@ function ezoix_custom_login_logo()
                 height: 60px;
             }
         </style>
-        <?php
+    <?php
     }
 }
 add_action('login_enqueue_scripts', 'ezoix_custom_login_logo');
@@ -767,8 +767,7 @@ function ezoix_render_grid_card()
             <a href="<?php the_permalink(); ?>">
                 <div class="thumbnail-aspect-ratio-box">
                     <?php if (has_post_thumbnail()) : ?>
-                        <?php 
-                        // Using grid-landscape size (280x157.5, 16:9)
+                        <?php
                         the_post_thumbnail('grid-landscape', array(
                             'loading' => 'lazy',
                             'alt' => get_the_title(),
@@ -777,9 +776,12 @@ function ezoix_render_grid_card()
                         ?>
                     <?php else : ?>
                         <div class="placeholder-content category-thumbnail-placeholder">
-                            <span class="placeholder-icon"><?php echo esc_html($placeholder_icon); ?></span>
+                            <div class="placeholder-title-text">
+                                <?php echo esc_html(wp_trim_words($title, 20, '...')); // Limit words to prevent overflow 
+                                ?>
+                            </div>
                             <span class="category-placeholder-cat">
-                                <?php 
+                                <?php
                                 if ($post_type === 'mobile_device') {
                                     echo 'DEVICE';
                                 } else {
@@ -800,7 +802,6 @@ function ezoix_render_grid_card()
             </h3>
 
             <div class="item-meta-yt">
-                <p class="author-name"><?php echo esc_html($author_name); ?></p>
                 <p class="post-date">
                     <?php echo get_the_date('M j, Y'); ?>
                     <?php if ($meta_right_content) : ?>
@@ -808,9 +809,10 @@ function ezoix_render_grid_card()
                     <?php endif; ?>
                 </p>
             </div>
-            
+
             <p class="category-post-excerpt">
-                <?php echo wp_trim_words(get_the_excerpt(), 18); // Shorter excerpt for grid layout ?>
+                <?php echo wp_trim_words(get_the_excerpt(), 18); // Shorter excerpt for grid layout 
+                ?>
             </p>
 
             <a href="<?php the_permalink(); ?>" class="category-read-more">
@@ -818,7 +820,7 @@ function ezoix_render_grid_card()
             </a>
         </div>
     </article>
-<?php
+    <?php
 }
 
 
@@ -997,7 +999,7 @@ function ezoix_schema_markup()
 {
     if (is_single()) {
         global $post;
-        ?>
+    ?>
         <script type="application/ld+json">
             {
                 "@context": "https://schema.org",
