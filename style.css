@@ -1271,6 +1271,21 @@ ol {
     font-size: 20px;
 }
 
+.buynow {
+    border: none;
+    background: none;
+    color: inherit;
+    font-size: inherit;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
+
 /* ==========================================================================
    SCROLL TO TOP
    ========================================================================== */
@@ -1356,130 +1371,6 @@ ol {
     border-top: 1px solid var(--border-light);
     color: var(--text-light);
     font-size: 14px;
-}
-
-
-/* ==========================================================================
-   DARK MODE
-   ========================================================================== */
-body.dark-mode {
-    --primary-color: #6daafb;
-    --primary-light: #1e3a38;
-    --primary-dark: #0056b3;
-    --text-dark: #f0f4f8;
-    --text-medium: #a7b7c9;
-    --text-light: #6b7280;
-    --background-white: #111827;
-    --background-light: #1f2937;
-    --border-light: #374151;
-    --border-medium: #4b5563;
-    --shadow: none;
-    --shadow-hover: 0 4px 15px rgba(255, 255, 255, 0.1);
-    background-color: var(--background-white);
-    color: var(--text-dark);
-}
-
-body.dark-mode h1,
-body.dark-mode h2,
-body.dark-mode h3,
-body.dark-mode h4,
-body.dark-mode .site-logo a {
-    color: var(--text-dark);
-}
-
-body.dark-mode a {
-    color: var(--primary-color);
-}
-
-body.dark-mode a:hover,
-body.dark-mode a:focus {
-    color: var(--primary-dark);
-}
-
-/* Layout components */
-body.dark-mode .site-header {
-    background-color: var(--background-light);
-    box-shadow: var(--shadow-hover);
-}
-
-body.dark-mode .site-footer {
-    background-color: var(--background-light);
-    border-top-color: var(--border-medium);
-}
-
-body.dark-mode .hero-section {
-    background-color: var(--background-light);
-}
-
-/* Feed/Post/Widget Cards */
-body.dark-mode .category-post-card,
-body.dark-mode .sidebar-widget,
-body.dark-mode .single-post,
-body.dark-mode .error-404 {
-    background: var(--background-light);
-    border-color: var(--border-medium);
-    box-shadow: none;
-}
-
-body.dark-mode .category-post-card:hover {
-    box-shadow: 0 0 0 1px var(--primary-color), var(--shadow-hover);
-    border-color: var(--primary-color);
-}
-
-/* Single Device Specific */
-body.dark-mode .mobile-device-container {
-    background: var(--background-white);
-}
-
-body.dark-mode .specs-table {
-    background: var(--background-light);
-}
-
-body.dark-mode .specs-table .category-header td {
-    background: var(--primary-dark);
-    border-bottom-color: var(--border-medium) !important;
-}
-
-body.dark-mode .spec-key {
-    background: var(--border-light) !important;
-    border-right-color: var(--border-medium) !important;
-    color: var(--text-medium) !important;
-}
-
-body.dark-mode .spec-value {
-    color: var(--text-dark) !important;
-}
-
-body.dark-mode .spec-row {
-    border-bottom-color: var(--border-medium);
-}
-
-body.dark-mode .spec-row:hover {
-    background: var(--border-light);
-}
-
-body.dark-mode .pros-section {
-    background: rgba(16, 185, 129, 0.15);
-    border-left-color: var(--color-success);
-}
-
-body.dark-mode .cons-section {
-    background: rgba(239, 68, 68, 0.15);
-    border-left-color: var(--color-danger);
-}
-
-body.dark-mode .pros-section li,
-body.dark-mode .cons-section li {
-    border-bottom-color: var(--border-medium);
-}
-
-body.dark-mode .buy-link-button {
-    background: var(--primary-light);
-    color: var(--primary-color);
-}
-
-body.dark-mode .buy-link-button:hover {
-    background: var(--border-medium);
 }
 
 
@@ -1724,15 +1615,4 @@ body.dark-mode .buy-link-button:hover {
         background: var(--primary-light);
         border-radius: 20px;
     }
-
-    /* Specs Table Responsive */
-    .specs-table {
-        display: block;
-        overflow-x: auto;
-    }
-
-    .spec-key {
-        width: 50% !important;
-    }
 }
-/* In the RESPONSIVE DESIGN section, update the desktop media query: */

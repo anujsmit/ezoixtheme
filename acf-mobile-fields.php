@@ -191,6 +191,13 @@ if (function_exists('acf_add_local_field_group')):
                     'value' => 'mobile_device',
                 ),
             ),
+            array( // ADDED
+                array(
+                    'param' => 'post_type',
+                    'operator' => '==',
+                    'value' => 'laptop_device',
+                ),
+            ),
         ),
     ));
 

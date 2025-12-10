@@ -26,18 +26,6 @@
                         </div>
                     </header>
 
-                    <?php if (has_post_thumbnail()) : ?>
-                        <div class="post-featured-image">
-                            <?php
-                            the_post_thumbnail('featured-image', array(
-                                'loading' => 'eager',
-                                'alt' => get_the_title(),
-                                'class' => 'ezoix-critical'
-                            ));
-                            ?>
-                        </div>
-                    <?php endif; ?>
-
                     <div class="post-content">
                         <?php the_content(); ?>
                         <?php if (function_exists('get_field')) : ?>
