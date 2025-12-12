@@ -123,7 +123,9 @@
                         <?php endif; ?>
                     </div>
                 </article>
-            <?php endwhile; ?>
+                
+                <?php echo ezoix_get_most_recent_link(get_the_ID()); ?>
+                <?php endwhile; ?>
         </main>
     </div>
 </div>

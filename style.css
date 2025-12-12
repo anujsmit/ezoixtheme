@@ -1738,3 +1738,49 @@ ol {
     color: var(--text-dark);
     font-weight: 700;
 }
+
+}
+
+/* ==========================================================================
+   NEW: AUTOMATIC INTERNAL LINK WIDGET
+   ========================================================================== */
+
+/* Styling for the Automatic Latest Link Widget */
+.auto-latest-link {
+    /* Uses existing sidebar-widget styling */
+    margin-top: 25px; 
+    padding: 20px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    background: var(--background-white);
+    box-shadow: var(--shadow);
+}
+
+.auto-latest-link .widget-title {
+    /* Uses existing widget-title styling */
+    color: var(--color-info); /* Use an engaging color */
+    border-bottom-color: var(--primary-light);
+}
+
+.auto-latest-link p {
+    margin: 0;
+    font-size: 15px;
+}
+
+.auto-latest-link .cta-button {
+    /* Reuse the cta-button style for the link */
+    display: inline-block;
+    padding: 10px 18px;
+    margin-top: 10px;
+    background: var(--color-info); /* A nice contrasting color */
+    color: white;
+    font-weight: 700;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.auto-latest-link .cta-button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}

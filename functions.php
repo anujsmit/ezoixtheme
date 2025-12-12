@@ -3471,3 +3471,45 @@ function ezoix_set_focus_keyword_from_tags($post_id)
 add_action('save_post', 'ezoix_set_focus_keyword_from_tags');
 add_action('save_post_mobile_device', 'ezoix_set_focus_keyword_from_tags');
 add_action('save_post_laptop_device', 'ezoix_set_focus_keyword_from_tags');
+
+/**
+ * Automatically fetches and displays a link to the most recently published content.
+ *
+ * @param int $current_post_id The ID of the current post to exclude from the query.
+ * @return string HTML output of the latest link or an empty string.
+ */
+function ezoix_get_most_recent_link($current_post_id) {
+    // Query arguments to find the single most recent item (excluding the current one)
+    $args = array(
+        'post_type'      => array('post', 'mobile_device', 'laptop_device'), // Include all content types
+        'posts_per_page' => 1,
+        'post_status'    => 'publish',
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+        'post__not_in'   => array($current_post_id), // CRUCIAL: Exclude the page the user is currently on
+        'no_found_rows'  => true, // Improves performance
+    );
+
+    $recent_posts = new WP_Query($args);
+    $output = '';
+
+    if ($recent_posts->have_posts()) {
+        $recent_posts->the_post();
+        $permalink = get_permalink();
+        $title = get_the_title();
+        
+        // Determine the type label for anchor text
+        $post_type_obj = get_post_type_object(get_post_type());
+        $post_type_label = $post_type_obj ? $post_type_obj->labels->singular_name : 'Article';
+
+        $output = '<section class="auto-latest-link sidebar-widget">';
+        $output .= '<h3 class="widget-title">Continue Reading</h3>';
+        $output .= '<p>Check out our latest ' . esc_html($post_type_label) . ': <br>';
+        $output .= '<a href="' . esc_url($permalink) . '" rel="next" class="cta-button">' . esc_html($title) . ' →</a></p>';
+        $output .= '</section>';
+        
+        wp_reset_postdata();
+    }
+
+    return $output;
+}

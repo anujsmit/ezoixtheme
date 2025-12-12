@@ -228,7 +228,8 @@ get_header(); ?>
                     endif;
                 endif;
                 ?>
-
+                
+                <?php echo ezoix_get_most_recent_link(get_the_ID()); ?>
                 <?php if (function_exists('get_field') && get_field('affiliate_links')) : ?>
                     <div class="cta-widget sidebar-widget">
                         <h3 class="widget-title">Ready to Buy?</h3>
