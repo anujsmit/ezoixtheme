@@ -1888,7 +1888,8 @@ function ezoix_load_acf_fields()
 }
 
 /**
- * Improved JSON Processor with GSM Arena-like structure (Original code)
+ * Improved JSON Processor with GSM Arena-like structure 
+ * MODIFIED: Now extracts nested content fields, including image URLs.
  */
 function ezoix_process_mobile_json($json_content)
 {
@@ -1909,9 +1910,28 @@ function ezoix_process_mobile_json($json_content)
         'affiliate_links' => array(),
         'pros' => array(),
         'cons' => array(),
-        'tags' => isset($specs_data['tags']) ? (is_array($specs_data['tags']) ? array_map('sanitize_text_field', $specs_data['tags']) : sanitize_text_field($specs_data['tags'])) : array(),
-        'meta_description' => isset($specs_data['meta_description']) ? sanitize_text_field($specs_data['meta_description']) : '',
+        
+        'tags' => isset($specs_data['seo']['tags']) && is_array($specs_data['seo']['tags']) ? array_map('sanitize_text_field', $specs_data['seo']['tags']) : (isset($specs_data['tags']) ? (is_array($specs_data['tags']) ? array_map('sanitize_text_field', $specs_data['tags']) : sanitize_text_field($specs_data['tags'])) : array()),
+        'meta_description' => isset($specs_data['seo']['meta_description']) ? sanitize_text_field($specs_data['seo']['meta_description']) : (isset($specs_data['meta_description']) ? sanitize_text_field($specs_data['meta_description']) : ''),
         'type' => isset($specs_data['type']) ? sanitize_text_field($specs_data['type']) : 'mobile_device', // MODIFIED
+        
+        // --- TEXT FIELDS EXTRACTION ---
+        'review_introduction' => isset($specs_data['content']['introduction']['text']) ? sanitize_textarea_field($specs_data['content']['introduction']['text']) : '',
+        'review_display' => isset($specs_data['content']['display_experience']['text']) ? sanitize_textarea_field($specs_data['content']['display_experience']['text']) : '',
+        'review_performance' => isset($specs_data['content']['performance_and_gaming']['text']) ? sanitize_textarea_field($specs_data['content']['performance_and_gaming']['text']) : '',
+        'review_camera' => isset($specs_data['content']['camera_performance']['text']) ? sanitize_textarea_field($specs_data['content']['camera_performance']['text']) : '',
+        'review_battery' => isset($specs_data['content']['battery_and_charging']['text']) ? sanitize_textarea_field($specs_data['content']['battery_and_charging']['text']) : '',
+        'review_verdict' => isset($specs_data['content']['final_verdict']['text']) ? sanitize_textarea_field($specs_data['content']['final_verdict']['text']) : '',
+        
+        // --- NEW IMAGE URL FIELDS EXTRACTION ---
+        // Assuming the image URL is stored under an 'image_url' key in the nested content objects.
+        'review_introduction_image' => isset($specs_data['content']['introduction']['image_url']) ? esc_url_raw($specs_data['content']['introduction']['image_url']) : '',
+        'review_display_image' => isset($specs_data['content']['display_experience']['image_url']) ? esc_url_raw($specs_data['content']['display_experience']['image_url']) : '',
+        'review_performance_image' => isset($specs_data['content']['performance_and_gaming']['image_url']) ? esc_url_raw($specs_data['content']['performance_and_gaming']['image_url']) : '',
+        'review_camera_image' => isset($specs_data['content']['camera_performance']['image_url']) ? esc_url_raw($specs_data['content']['camera_performance']['image_url']) : '',
+        'review_battery_image' => isset($specs_data['content']['battery_and_charging']['image_url']) ? esc_url_raw($specs_data['content']['battery_and_charging']['image_url']) : '',
+        'review_verdict_image' => isset($specs_data['content']['final_verdict']['image_url']) ? esc_url_raw($specs_data['content']['final_verdict']['image_url']) : '',
+        // --- END NEW IMAGE FIELDS ---
     );
 
     if (isset($specs_data['specifications']) && is_array($specs_data['specifications'])) {
@@ -1977,6 +1997,7 @@ function ezoix_process_mobile_json($json_content)
 }
 /**
  * Enhanced JSON Import with better error handling
+ * MODIFIED: Sets main post_content and saves all new review fields (text and image URL).
  */
 function ezoix_import_mobile_json($json_content, $create_post = true)
 {
@@ -1996,13 +2017,23 @@ function ezoix_import_mobile_json($json_content, $create_post = true)
 
         $existing_post = get_page_by_title($specs_data['device_name'], OBJECT, $post_type_hint);
 
+        // --- Determine main post content from the new review_introduction field ---
+        $main_post_content = '';
+        if (!empty($specs_data['description'])) {
+            $main_post_content = $specs_data['description'];
+        } elseif (!empty($specs_data['review_introduction'])) { 
+            $main_post_content = $specs_data['review_introduction'];
+        }
+        // -----------------------------------------------------------------------
+
         if ($existing_post) {
             $post_id = $existing_post->ID;
             $post_data = array(
                 'ID' => $post_id,
                 'post_title' => $specs_data['device_name'],
                 'post_type' => $post_type_hint,
-                'post_status' => 'publish'
+                'post_status' => 'publish',
+                'post_content' => $main_post_content
             );
             wp_update_post($post_data);
         } else {
@@ -2010,14 +2041,17 @@ function ezoix_import_mobile_json($json_content, $create_post = true)
                 'post_title' => $specs_data['device_name'],
                 'post_type' => $post_type_hint,
                 'post_status' => 'publish',
-                'post_content' => isset($specs_data['description']) ? sanitize_textarea_field($specs_data['description']) : ''
+                'post_content' => $main_post_content
             );
             $post_id = wp_insert_post($post_data);
         }
 
         if ($post_id && !is_wp_error($post_id) && function_exists('update_field')) {
+            
+            // This loop handles all simple fields, including all new 'review_' fields (text and image URL)
             foreach ($specs_data as $field => $value) {
-                if ($field !== 'specifications' && $field !== 'affiliate_links' && $field !== 'pros' && $field !== 'cons') {
+                // Skip complex/array fields and nested JSON objects
+                if ($field !== 'specifications' && $field !== 'affiliate_links' && $field !== 'pros' && $field !== 'cons' && $field !== 'tags' && $field !== 'meta_description') {
                     update_field($field, $value, $post_id);
                 }
             }
@@ -2203,7 +2237,7 @@ function ezoix_mobile_specs_admin_page_enhanced()
                     <tr>
                         <th scope="row"><label for="json_file">Upload JSON File</label></th>
                         <td>
-                            <input type="file" name="json_file" id="json_file" accept=".json" required>
+                            <input type="file" name="json_file" id="json_file" accept=".json"   >
                             <p class="description">Upload a JSON file containing mobile or laptop specifications</p>
                         </td>
                     </tr>
@@ -2257,6 +2291,18 @@ function ezoix_mobile_specs_admin_page_enhanced()
   "description": "The latest flagship from Samsung with advanced features.",
   "type": "mobile_device", // Set to "laptop_device" for laptops
   
+  "content": {
+    "introduction": {
+      "text": "The introductory text/overview...",
+      "image_url": "https://example.com/images/s25-intro.jpg"
+    },
+    "display_experience": {
+      "text": "Details about the display experience...",
+      "image_url": "https://example.com/images/s25-display.jpg"
+    }
+    // ... other content sections
+  },
+
   "specifications": {
     "display": {
       "size": "6.8 inches",
@@ -3473,21 +3519,42 @@ add_action('save_post_mobile_device', 'ezoix_set_focus_keyword_from_tags');
 add_action('save_post_laptop_device', 'ezoix_set_focus_keyword_from_tags');
 
 /**
- * Automatically fetches and displays a link to the most recently published content.
+ * Automatically fetches and displays a link to the immediately preceding published post.
  *
  * @param int $current_post_id The ID of the current post to exclude from the query.
  * @return string HTML output of the latest link or an empty string.
  */
 function ezoix_get_most_recent_link($current_post_id) {
-    // Query arguments to find the single most recent item (excluding the current one)
+    // Get the current post object to find its publication date
+    $current_post = get_post($current_post_id);
+
+    if (!$current_post) {
+        return '';
+    }
+
+    // Get the exact date and time of the current post for comparison
+    $current_post_date = $current_post->post_date;
+
+    // Query arguments to find the post immediately PRECEDING the current one in time
     $args = array(
-        'post_type'      => array('post', 'mobile_device', 'laptop_device'), // Include all content types
+        'post_type'      => array('post', 'mobile_device', 'laptop_device'), 
         'posts_per_page' => 1,
         'post_status'    => 'publish',
+        
+        // Find the "newest" post that is still older than the current one
         'orderby'        => 'date',
-        'order'          => 'DESC',
-        'post__not_in'   => array($current_post_id), // CRUCIAL: Exclude the page the user is currently on
-        'no_found_rows'  => true, // Improves performance
+        'order'          => 'DESC', 
+        
+        'post__not_in'   => array($current_post_id), // Exclude the current page
+        'no_found_rows'  => true, 
+        
+        'date_query'     => array(
+            array(
+                'before'    => $current_post_date,
+                'inclusive' => false,
+                'column'    => 'post_date',
+            ),
+        ),
     );
 
     $recent_posts = new WP_Query($args);
@@ -3503,9 +3570,9 @@ function ezoix_get_most_recent_link($current_post_id) {
         $post_type_label = $post_type_obj ? $post_type_obj->labels->singular_name : 'Article';
 
         $output = '<section class="auto-latest-link sidebar-widget">';
-        $output .= '<h3 class="widget-title">Continue Reading</h3>';
-        $output .= '<p>Check out our latest ' . esc_html($post_type_label) . ': <br>';
-        $output .= '<a href="' . esc_url($permalink) . '" rel="next" class="cta-button">' . esc_html($title) . ' →</a></p>';
+        $output .= '<h3 class="widget-title">Previously Published</h3>'; // Updated title
+        $output .= '<p>Read our previous ' . esc_html($post_type_label) . ': <br>';
+        $output .= '<a href="' . esc_url($permalink) . '" rel="prev" class="cta-button">' . esc_html($title) . ' →</a></p>'; // Added rel="prev"
         $output .= '</section>';
         
         wp_reset_postdata();

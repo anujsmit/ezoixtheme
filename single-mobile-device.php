@@ -6,6 +6,24 @@
 
 get_header(); ?>
 
+<style>
+/* Custom Styling for Review Section Images */
+.review-image-wrapper {
+    margin-top: 15px; /* Added margin for separation from text */
+    margin-bottom: 25px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.review-section-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+</style>
+
 <div class="mobile-device-container">
     <div class="device-header">
         <div class="container">
@@ -73,12 +91,72 @@ get_header(); ?>
                     </section>
                 <?php endif; ?>
 
-                <?php if (get_the_content()) : ?>
-                    <section class="device-description full-specifications">
-                        <h2 class="section-title">Overview</h2>
+                <?php
+                // --- CUSTOM INTERLEAVED REVIEW SECTIONS ---
+                if (function_exists('get_field')) :
+                    $review_sections_data = array(
+                        // The introduction text is stored in the main post_content
+                        'introduction' => array('title' => 'Overview', 'text_field' => 'review_introduction', 'image_field' => 'review_introduction_image'),
+                        'display'      => array('title' => 'Display Experience', 'text_field' => 'review_display', 'image_field' => 'review_display_image'),
+                        'performance'  => array('title' => 'Performance and Gaming', 'text_field' => 'review_performance', 'image_field' => 'review_performance_image'),
+                        'camera'       => array('title' => 'Camera Performance', 'text_field' => 'review_camera', 'image_field' => 'review_camera_image'),
+                        'battery'      => array('title' => 'Battery and Charging', 'text_field' => 'review_battery', 'image_field' => 'review_battery_image'),
+                    );
+
+                    foreach ($review_sections_data as $key => $section) :
+                        // Get content
+                        $content_text = ($key === 'introduction') ? get_the_content() : get_field($section['text_field']);
+                        $image_url = get_field($section['image_field']);
+
+                        if (!empty($content_text) || !empty($image_url)) :
+                ?>
+                            <section class="device-review-section device-<?php echo esc_attr($key); ?> full-specifications">
+                                <h2 class="section-title"><?php echo esc_html($section['title']); ?></h2>
+                                
+                                <?php if (!empty($content_text)) : ?>
+                                <div class="post-content">
+                                    <?php 
+                                    // Use the_content() only for the first section to handle formatting/blocks
+                                    if ($key === 'introduction') {
+                                        the_content();
+                                    } else {
+                                        echo wpautop($content_text); // Use wpautop for ACF textareas
+                                    }
+                                    ?>
+                                </div>
+                                <?php endif; ?>
+
+                                <?php if (!empty($image_url)) : ?>
+                                <div class="review-image-wrapper">
+                                    <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr(get_the_title() . ' - ' . $section['title']); ?>" class="review-section-image" loading="lazy">
+                                </div>
+                                <?php endif; ?>
+                            </section>
+                <?php
+                        endif;
+                    endforeach;
+                endif;
+                // --- END CUSTOM INTERLEAVED REVIEW SECTIONS ---
+                ?>
+
+                <?php 
+                // Final Verdict Section (Displayed separately)
+                $final_verdict = get_field('review_verdict');
+                $final_verdict_image = get_field('review_verdict_image');
+                if (!empty($final_verdict) || !empty($final_verdict_image)) :
+                ?>
+                    <section class="device-review-section device-final-verdict">
+                        <h2 class="section-title">Final Verdict</h2>
+                        <?php if (!empty($final_verdict)) : ?>
                         <div class="post-content">
-                            <?php the_content(); ?>
+                            <?php echo wpautop($final_verdict); ?>
                         </div>
+                        <?php endif; ?>
+                        <?php if (!empty($final_verdict_image)) : ?>
+                        <div class="review-image-wrapper">
+                            <img src="<?php echo esc_url($final_verdict_image); ?>" alt="<?php echo esc_attr(get_the_title()); ?> - Final Verdict" class="review-section-image" loading="lazy">
+                        </div>
+                        <?php endif; ?>
                     </section>
                 <?php endif; ?>
 
