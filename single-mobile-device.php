@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Template for displaying single mobile devices - SIMPLIFIED UI
  * * This file replaces the complex gallery and accordion with a single, table-based specification layout.
@@ -7,21 +8,22 @@
 get_header(); ?>
 
 <style>
-/* Custom Styling for Review Section Images */
-.review-image-wrapper {
-    margin-top: 15px; /* Added margin for separation from text */
-    margin-bottom: 25px;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
+    /* Custom Styling for Review Section Images */
+    .review-image-wrapper {
+        margin-top: 15px;
+        /* Added margin for separation from text */
+        margin-bottom: 25px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
 
-.review-section-image {
-    width: 100%;
-    height: auto;
-    display: block;
-    object-fit: cover;
-}
+    .review-section-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        object-fit: cover;
+    }
 </style>
 
 <div class="mobile-device-container">
@@ -103,6 +105,9 @@ get_header(); ?>
                         'battery'      => array('title' => 'Battery and Charging', 'text_field' => 'review_battery', 'image_field' => 'review_battery_image'),
                     );
 
+                    // Counter to track if we've processed the overview section
+                    $overview_processed = false;
+                    
                     foreach ($review_sections_data as $key => $section) :
                         // Get content
                         $content_text = ($key === 'introduction') ? get_the_content() : get_field($section['text_field']);
@@ -112,35 +117,84 @@ get_header(); ?>
                 ?>
                             <section class="device-review-section device-<?php echo esc_attr($key); ?> full-specifications">
                                 <h2 class="section-title"><?php echo esc_html($section['title']); ?></h2>
-                                
+
                                 <?php if (!empty($content_text)) : ?>
-                                <div class="post-content">
-                                    <?php 
-                                    // Use the_content() only for the first section to handle formatting/blocks
-                                    if ($key === 'introduction') {
-                                        the_content();
-                                    } else {
-                                        echo wpautop($content_text); // Use wpautop for ACF textareas
-                                    }
-                                    ?>
-                                </div>
+                                    <div class="post-content">
+                                        <?php
+                                        // Use the_content() only for the first section to handle formatting/blocks
+                                        if ($key === 'introduction') {
+                                            the_content();
+                                        } else {
+                                            echo wpautop($content_text); // Use wpautop for ACF textareas
+                                        }
+                                        ?>
+                                    </div>
                                 <?php endif; ?>
 
                                 <?php if (!empty($image_url)) : ?>
-                                <div class="review-image-wrapper">
-                                    <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr(get_the_title() . ' - ' . $section['title']); ?>" class="review-section-image" loading="lazy">
-                                </div>
+                                    <div class="review-image-wrapper">
+                                        <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr(get_the_title() . ' - ' . $section['title']); ?>" class="review-section-image" loading="lazy">
+                                    </div>
                                 <?php endif; ?>
                             </section>
                 <?php
+                            // Mark overview as processed
+                            if ($key === 'introduction') {
+                                $overview_processed = true;
+                            }
+                            
+                            // Display YouTube video right after overview
+                            if ($overview_processed && !isset($youtube_shown)) {
+                                $youtube_video = get_field('youtube_video');
+                                if ($youtube_video) : 
+                                    $youtube_shown = true;
+                                ?>
+                                    <section class="device-video-review full-specifications" style="margin-bottom: 30px;">
+                                        <h2 class="section-title">Video Review & Show</h2>
+                                        <div class="video-wrapper" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                                            <div>
+                                                <?php echo $youtube_video; ?>
+                                            </div>
+                                        </div>
+                                    </section>
+                                <?php endif;
+                            }
                         endif;
                     endforeach;
                 endif;
                 // --- END CUSTOM INTERLEAVED REVIEW SECTIONS ---
                 ?>
 
-                <?php 
-                // Final Verdict Section (Displayed separately)
+                <?php if (function_exists('get_field') && get_field('specifications')) : ?>
+                    <section class="full-specifications">
+                        <h2 class="section-title">Full Specifications</h2>
+                        <table class="specs-table">
+                            <tbody>
+                                <?php
+                                $specifications = get_field('specifications');
+                                foreach ($specifications as $category) :
+                                    if (empty($category['category']) || empty($category['items'])) continue;
+                                ?>
+                                    <tr class="spec-category">
+                                        <th colspan="2"><?php echo esc_html($category['category']); ?></th>
+                                    </tr>
+                                    <?php foreach ($category['items'] as $item) : ?>
+                                        <tr>
+                                            <td class="spec-key"><?php echo esc_html($item['key']); ?></td>
+                                            <td class="spec-value"><?php echo esc_html($item['value']); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+
+                                <?php
+                                endforeach;
+                                ?>
+                            </tbody>
+                        </table>
+                    </section>
+                <?php endif; ?>
+
+                <?php
+                // Final Verdict Section (Now displayed after specifications)
                 $final_verdict = get_field('review_verdict');
                 $final_verdict_image = get_field('review_verdict_image');
                 if (!empty($final_verdict) || !empty($final_verdict_image)) :
@@ -148,53 +202,15 @@ get_header(); ?>
                     <section class="device-review-section device-final-verdict">
                         <h2 class="section-title">Final Verdict</h2>
                         <?php if (!empty($final_verdict)) : ?>
-                        <div class="post-content">
-                            <?php echo wpautop($final_verdict); ?>
-                        </div>
+                            <div class="post-content">
+                                <?php echo wpautop($final_verdict); ?>
+                            </div>
                         <?php endif; ?>
                         <?php if (!empty($final_verdict_image)) : ?>
-                        <div class="review-image-wrapper">
-                            <img src="<?php echo esc_url($final_verdict_image); ?>" alt="<?php echo esc_attr(get_the_title()); ?> - Final Verdict" class="review-section-image" loading="lazy">
-                        </div>
+                            <div class="review-image-wrapper">
+                                <img src="<?php echo esc_url($final_verdict_image); ?>" alt="<?php echo esc_attr(get_the_title()); ?> - Final Verdict" class="review-section-image" loading="lazy">
+                            </div>
                         <?php endif; ?>
-                    </section>
-                <?php endif; ?>
-
-                <?php if (function_exists('get_field') && get_field('specifications')) :
-                    $specifications = get_field('specifications');
-                ?>
-                    <section class="full-specifications simple-specs">
-                        <h2 class="section-title">Full Specifications</h2>
-
-                        <table class="specs-table">
-                            <tbody>
-                                <?php
-                                foreach ($specifications as $category) :
-                                    if (!empty($category['items'])) :
-                                ?>
-                                        <tr class="category-header">
-                                            <td colspan="2">
-                                                <?php echo esc_html($category['category']); ?>
-                                            </td>
-                                        </tr>
-
-                                        <?php foreach ($category['items'] as $item) : ?>
-                                            <tr class="spec-row">
-                                                <td class="spec-key">
-                                                    <?php echo esc_html($item['key']); ?>
-                                                </td>
-                                                <td class="spec-value">
-                                                    <?php echo esc_html($item['value']); ?>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-
-                                <?php
-                                    endif;
-                                endforeach;
-                                ?>
-                            </tbody>
-                        </table>
                     </section>
                 <?php endif; ?>
 
@@ -247,12 +263,12 @@ get_header(); ?>
                 if (function_exists('ezoix_get_similar_mobile_devices')) :
                     // 1. Try to get similar devices
                     $sidebar_devices = ezoix_get_similar_mobile_devices($current_post_id, $device_limit);
-                    
+
                     // 2. Fallback: If no similar devices found, get random devices
                     if (!$sidebar_devices->have_posts()) {
                         // Reset query to run a new random query
-                        wp_reset_query(); 
-                        
+                        wp_reset_query();
+
                         $sidebar_devices = new WP_Query(array(
                             'post_type'      => 'mobile_device',
                             'post_status'    => 'publish',
@@ -263,7 +279,7 @@ get_header(); ?>
                         ));
                         $widget_title = 'Other Popular Devices';
                     }
-                
+
                     // 3. Proceed only if we have posts (either similar or random)
                     if ($sidebar_devices->have_posts()) :
                 ?>
@@ -306,7 +322,7 @@ get_header(); ?>
                     endif;
                 endif;
                 ?>
-                
+
                 <?php echo ezoix_get_most_recent_link(get_the_ID()); ?>
                 <?php if (function_exists('get_field') && get_field('affiliate_links')) : ?>
                     <div class="cta-widget sidebar-widget">

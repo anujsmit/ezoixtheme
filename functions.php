@@ -56,8 +56,6 @@ function ezoix_theme_setup()
     add_image_size('desktop-thumbnail', 800, 400, true);
     add_image_size('featured-image', 1200, 600, true);
     add_image_size('hero-image', 1920, 800, true);
-    add_image_size('featured-image', 1200, 600, true);
-    add_image_size('hero-image', 1920, 800, true);
 
     // NEW: 9:16 Portrait Aspect Ratio Sizes
     add_image_size('feed-landscape', 120, 67.5, true);
@@ -67,8 +65,8 @@ function ezoix_theme_setup()
 
     ezoix_register_mobile_device_cpt();
     ezoix_register_mobile_taxonomies();
-    ezoix_register_laptop_device_cpt(); 
-    ezoix_register_laptop_taxonomies(); 
+    ezoix_register_laptop_device_cpt();
+    ezoix_register_laptop_taxonomies();
 }
 add_action('after_setup_theme', 'ezoix_theme_setup');
 
@@ -229,7 +227,7 @@ function ezoix_cache_featured_posts($number = 2)
         // Query posts, mobile devices, AND LAPTOPS for featured section
         $posts = new WP_Query(array(
             'posts_per_page' => $number,
-            'post_type' => array('post', 'mobile_device', 'laptop_device'), 
+            'post_type' => array('post', 'mobile_device', 'laptop_device'),
             'meta_query'     => array(
                 array(
                     'key'     => 'featured_post',
@@ -295,13 +293,24 @@ function ezoix_add_featured_meta_box()
         'ezoix_featured_meta',
         __('Featured Post', 'ezoix'),
         'ezoix_featured_meta_callback',
-        array('post', 'mobile_device', 'laptop_device'), 
+        array('post', 'mobile_device', 'laptop_device'),
         'side',
         'default'
     );
 }
 add_action('add_meta_boxes', 'ezoix_add_featured_meta_box');
 
+function ezoix_register_video_cpt()
+{
+    register_post_type('youtube_video', array(
+        'labels' => array('name' => 'YouTube Videos', 'singular_name' => 'Video'),
+        'public' => true,
+        'menu_icon' => 'dashicons-video-alt3',
+        'supports' => array('title', 'editor', 'thumbnail', 'custom-fields'),
+        'rewrite' => array('slug' => 'videos'),
+    ));
+}
+add_action('init', 'ezoix_register_video_cpt');
 function ezoix_featured_meta_callback($post)
 {
     wp_nonce_field('ezoix_featured_meta', 'ezoix_featured_meta_nonce');
@@ -328,7 +337,7 @@ function ezoix_save_featured_meta($post_id)
 
     if (isset($_POST['post_type'])) {
         $post_type = $_POST['post_type'];
-        if (! in_array($post_type, array('post', 'mobile_device', 'laptop_device'))) { 
+        if (! in_array($post_type, array('post', 'mobile_device', 'laptop_device'))) {
             return;
         }
 
@@ -676,7 +685,7 @@ function ezoix_include_cpt_on_home($query)
 {
     // Check if it's the main query and the home page (or posts page)
     if (! is_admin() && $query->is_main_query() && ($query->is_home() || $query->is_front_page())) {
-        $post_types_to_include = array('post', 'mobile_device', 'laptop_device'); 
+        $post_types_to_include = array('post', 'mobile_device', 'laptop_device');
         $current_post_types = (array) $query->get('post_type');
 
         $updated_post_types = array_unique(array_merge($current_post_types, $post_types_to_include));
@@ -704,9 +713,9 @@ function ezoix_get_total_pages_for_merged_feed()
 
     // 2. Count ALL published posts (post, mobile_device, and laptop_device)
     $all_posts_query = new WP_Query(array(
-        'post_type' => array('post', 'mobile_device', 'laptop_device'), 
+        'post_type' => array('post', 'mobile_device', 'laptop_device'),
         'post_status' => 'publish',
-        'posts_per_page' => -1, // Get total count
+        'posts_per_page' => 1, // Get total count
         'fields' => 'ids',
         'no_found_rows' => false,
         'post__not_in' => $exclude_ids,
@@ -744,7 +753,7 @@ function ezoix_render_grid_card()
     $device_type_label = 'ARTICLE';
     if ($post_type === 'mobile_device') {
         $device_type_label = 'DEVICE';
-    } elseif ($post_type === 'laptop_device') { 
+    } elseif ($post_type === 'laptop_device') {
         $device_type_label = 'LAPTOP';
     } else {
         $categories = get_the_category();
@@ -753,7 +762,7 @@ function ezoix_render_grid_card()
 
     // Calculate reading time or primary spec
     $meta_right_content = '';
-    if (in_array($post_type, ['mobile_device', 'laptop_device'])) { 
+    if (in_array($post_type, ['mobile_device', 'laptop_device'])) {
         // Display Price/Rating
         if ($price) {
             $meta_right_content .= '💵 ' . esc_html($price);
@@ -841,7 +850,7 @@ function ezoix_infinite_scroll_posts()
     $exclude_ids = wp_list_pluck($featured_posts->posts, 'ID');
 
     $query = new WP_Query(array(
-        'post_type' => array('post', 'mobile_device', 'laptop_device'), 
+        'post_type' => array('post', 'mobile_device', 'laptop_device'),
         'posts_per_page' => $posts_per_page,
         'offset' => $offset, // Use offset for proper pagination with exclusion
         'post__not_in' => $exclude_ids,
@@ -1179,7 +1188,7 @@ function ezoix_register_mobile_device_cpt()
         'capability_type'       => 'post',
         'show_in_rest'          => true,
         'rewrite'               => array(
-            'slug' => 'mobile-devices',
+            'slug' => 'mobile',
             'with_front' => false
         ),
     );
@@ -1212,7 +1221,7 @@ function ezoix_include_cpt_in_category_archive($query)
         // Add the 'mobile_device' CPT to the list
         if (!in_array('mobile_device', $post_types)) {
             $post_types[] = 'mobile_device';
-            $post_types[] = 'laptop_device'; 
+            $post_types[] = 'laptop_device';
             $query->set('post_type', $post_types);
         }
     }
@@ -1294,7 +1303,7 @@ function ezoix_register_mobile_taxonomies()
  * LAPTOP SPECS ACF INTEGRATION & CUSTOM POST TYPE
  * ============================================================================
  */
-function ezoix_register_laptop_device_cpt() 
+function ezoix_register_laptop_device_cpt()
 {
     $labels = array(
         'name'                  => _x('Laptop Devices', 'Post Type General Name', 'ezoix'),
@@ -1358,7 +1367,7 @@ function ezoix_register_laptop_device_cpt()
 /**
  * Register Laptop Taxonomies
  */
-function ezoix_register_laptop_taxonomies() 
+function ezoix_register_laptop_taxonomies()
 {
     $category_labels = array(
         'name'              => _x('Laptop Categories', 'taxonomy general name', 'ezoix'),
@@ -1691,8 +1700,8 @@ function ezoix_flush_rewrite_rules_on_activation()
 {
     ezoix_register_mobile_device_cpt();
     ezoix_register_mobile_taxonomies();
-    ezoix_register_laptop_device_cpt(); 
-    ezoix_register_laptop_taxonomies(); 
+    ezoix_register_laptop_device_cpt();
+    ezoix_register_laptop_taxonomies();
     flush_rewrite_rules();
 }
 register_activation_hook(__FILE__, 'ezoix_flush_rewrite_rules_on_activation');
@@ -1704,8 +1713,8 @@ function ezoix_init_mobile_specs()
 {
     ezoix_register_mobile_device_cpt();
     ezoix_register_mobile_taxonomies();
-    ezoix_register_laptop_device_cpt(); 
-    ezoix_register_laptop_taxonomies(); 
+    ezoix_register_laptop_device_cpt();
+    ezoix_register_laptop_taxonomies();
 }
 add_action('init', 'ezoix_init_mobile_specs', 0);
 
@@ -1729,7 +1738,7 @@ function ezoix_slug_conflicts_with_other_post_types($slug)
     global $wpdb;
 
     $existing = $wpdb->get_var($wpdb->prepare(
-        "SELECT ID FROM {$wpdb->posts} WHERE post_name = %s AND post_type NOT IN ('mobile_device', 'laptop_device', 'revision', 'nav_menu_item') LIMIT 1", 
+        "SELECT ID FROM {$wpdb->posts} WHERE post_name = %s AND post_type NOT IN ('mobile_device', 'laptop_device', 'revision', 'nav_menu_item') LIMIT 1",
         $slug
     ));
 
@@ -1797,7 +1806,7 @@ function ezoix_create_test_mobile_device()
     );
 
     $post_id = wp_insert_post($test_device);
-    
+
     // MODIFIED: ADDED LAPTOP TEST DEVICE
     $test_laptop = array(
         'post_title' => 'MacBook Pro 16 M4 Test',
@@ -1808,7 +1817,7 @@ function ezoix_create_test_mobile_device()
     );
     $laptop_id = wp_insert_post($test_laptop);
 
-    if (($post_id && !is_wp_error($post_id)) || ($laptop_id && !is_wp_error($laptop_id))) { 
+    if (($post_id && !is_wp_error($post_id)) || ($laptop_id && !is_wp_error($laptop_id))) {
         update_option('ezoix_test_device_created', true);
 
         if (function_exists('update_field')) {
@@ -1866,11 +1875,11 @@ function custom_404_redirect()
         global $wp;
         $current_url = home_url($wp->request);
 
-        if (strpos($current_url, '/mobile-devices/') !== false) {
-            wp_redirect(home_url('/mobile-devices/'));
+        if (strpos($current_url, '/mobile/') !== false) {
+            wp_redirect(home_url('/mobile/'));
             exit;
         }
-        if (strpos($current_url, '/laptop/') !== false) { 
+        if (strpos($current_url, '/laptop/') !== false) {
             wp_redirect(home_url('/laptop/'));
             exit;
         }
@@ -1906,15 +1915,16 @@ function ezoix_process_mobile_json($json_content)
         'device_price' => isset($specs_data['price']) ? sanitize_text_field($specs_data['price']) : '',
         'device_status' => isset($specs_data['status']) ? sanitize_text_field($specs_data['status']) : 'available',
         'device_rating' => isset($specs_data['rating']) ? floatval($specs_data['rating']) : 5,
+        'youtube_video' => isset($specs_data['youtube_url']) ? esc_url_raw($specs_data['youtube_url']) : '',
         'specifications' => array(),
         'affiliate_links' => array(),
         'pros' => array(),
         'cons' => array(),
-        
+
         'tags' => isset($specs_data['seo']['tags']) && is_array($specs_data['seo']['tags']) ? array_map('sanitize_text_field', $specs_data['seo']['tags']) : (isset($specs_data['tags']) ? (is_array($specs_data['tags']) ? array_map('sanitize_text_field', $specs_data['tags']) : sanitize_text_field($specs_data['tags'])) : array()),
         'meta_description' => isset($specs_data['seo']['meta_description']) ? sanitize_text_field($specs_data['seo']['meta_description']) : (isset($specs_data['meta_description']) ? sanitize_text_field($specs_data['meta_description']) : ''),
         'type' => isset($specs_data['type']) ? sanitize_text_field($specs_data['type']) : 'mobile_device', // MODIFIED
-        
+
         // --- TEXT FIELDS EXTRACTION ---
         'review_introduction' => isset($specs_data['content']['introduction']['text']) ? sanitize_textarea_field($specs_data['content']['introduction']['text']) : '',
         'review_display' => isset($specs_data['content']['display_experience']['text']) ? sanitize_textarea_field($specs_data['content']['display_experience']['text']) : '',
@@ -1922,9 +1932,6 @@ function ezoix_process_mobile_json($json_content)
         'review_camera' => isset($specs_data['content']['camera_performance']['text']) ? sanitize_textarea_field($specs_data['content']['camera_performance']['text']) : '',
         'review_battery' => isset($specs_data['content']['battery_and_charging']['text']) ? sanitize_textarea_field($specs_data['content']['battery_and_charging']['text']) : '',
         'review_verdict' => isset($specs_data['content']['final_verdict']['text']) ? sanitize_textarea_field($specs_data['content']['final_verdict']['text']) : '',
-        
-        // --- NEW IMAGE URL FIELDS EXTRACTION ---
-        // Assuming the image URL is stored under an 'image_url' key in the nested content objects.
         'review_introduction_image' => isset($specs_data['content']['introduction']['image_url']) ? esc_url_raw($specs_data['content']['introduction']['image_url']) : '',
         'review_display_image' => isset($specs_data['content']['display_experience']['image_url']) ? esc_url_raw($specs_data['content']['display_experience']['image_url']) : '',
         'review_performance_image' => isset($specs_data['content']['performance_and_gaming']['image_url']) ? esc_url_raw($specs_data['content']['performance_and_gaming']['image_url']) : '',
@@ -2013,7 +2020,7 @@ function ezoix_import_mobile_json($json_content, $create_post = true)
 
     if ($create_post) {
         // Determine post type. Use 'type' from JSON, or default to 'mobile_device' if not a valid CPT
-        $post_type_hint = isset($specs_data['type']) && in_array($specs_data['type'], ['mobile_device', 'laptop_device']) ? $specs_data['type'] : 'mobile_device'; 
+        $post_type_hint = isset($specs_data['type']) && in_array($specs_data['type'], ['mobile_device', 'laptop_device']) ? $specs_data['type'] : 'mobile_device';
 
         $existing_post = get_page_by_title($specs_data['device_name'], OBJECT, $post_type_hint);
 
@@ -2021,7 +2028,7 @@ function ezoix_import_mobile_json($json_content, $create_post = true)
         $main_post_content = '';
         if (!empty($specs_data['description'])) {
             $main_post_content = $specs_data['description'];
-        } elseif (!empty($specs_data['review_introduction'])) { 
+        } elseif (!empty($specs_data['review_introduction'])) {
             $main_post_content = $specs_data['review_introduction'];
         }
         // -----------------------------------------------------------------------
@@ -2047,7 +2054,7 @@ function ezoix_import_mobile_json($json_content, $create_post = true)
         }
 
         if ($post_id && !is_wp_error($post_id) && function_exists('update_field')) {
-            
+
             // This loop handles all simple fields, including all new 'review_' fields (text and image URL)
             foreach ($specs_data as $field => $value) {
                 // Skip complex/array fields and nested JSON objects
@@ -2237,7 +2244,7 @@ function ezoix_mobile_specs_admin_page_enhanced()
                     <tr>
                         <th scope="row"><label for="json_file">Upload JSON File</label></th>
                         <td>
-                            <input type="file" name="json_file" id="json_file" accept=".json"   >
+                            <input type="file" name="json_file" id="json_file" accept=".json">
                             <p class="description">Upload a JSON file containing mobile or laptop specifications</p>
                         </td>
                     </tr>
@@ -3071,7 +3078,7 @@ function ezoix_debug_cpt_status()
         echo '';
 
         $test_posts = get_posts(array(
-            'post_type' => array('mobile_device', 'laptop_device'), 
+            'post_type' => array('mobile_device', 'laptop_device'),
             'posts_per_page' => 1
         ));
         echo '';
@@ -3145,7 +3152,7 @@ function ezoix_auto_create_brand_category_for_devices($post_id, $post, $update) 
     }
 }
 add_action('save_post_mobile_device', 'ezoix_auto_create_brand_category_for_devices', 20, 3);
-add_action('save_post_laptop_device', 'ezoix_auto_create_brand_category_for_devices', 20, 3); 
+add_action('save_post_laptop_device', 'ezoix_auto_create_brand_category_for_devices', 20, 3);
 
 /**
  * Enhanced brand extraction with more brands (Original code)
@@ -3170,7 +3177,7 @@ function ezoix_extract_brand_from_name($device_name)
         'LG',
         'Huawei',
         'Honor',
-        'Asus', 
+        'Asus',
         'Lenovo',
         'HTC',
         'BlackBerry',
@@ -3191,7 +3198,7 @@ function ezoix_extract_brand_from_name($device_name)
         'Sharp',
         'Panasonic',
         'Kyocera',
-        'Dell', 
+        'Dell',
         'HP',
         'Acer',
         'MSI',
@@ -3257,7 +3264,7 @@ add_action('init', 'ezoix_fix_brand_archive_rewrites', 20);
  */
 function ezoix_auto_populate_brand_field($post_id)
 {
-    if (get_post_type($post_id) !== 'mobile_device' && get_post_type($post_id) !== 'laptop_device' || wp_is_post_revision($post_id)) { 
+    if (get_post_type($post_id) !== 'mobile_device' && get_post_type($post_id) !== 'laptop_device' || wp_is_post_revision($post_id)) {
         return;
     }
 
@@ -3304,14 +3311,14 @@ add_action('wp_insert_post', 'ezoix_auto_populate_brand_field', 20, 1);
 function ezoix_mobile_archive_templates($template) // MODIFIED to include laptop templates
 {
     if (is_tax('mobile_brand') || is_tax('laptop_brand')) {
-        $new_template = locate_template('archive-mobile-device.php'); 
+        $new_template = locate_template('archive-mobile-device.php');
         if ($new_template) {
             return $new_template;
         }
     }
 
     if (is_tax('mobile_category') || is_tax('laptop_category')) {
-        $new_template = locate_template('archive-mobile-category.php'); 
+        $new_template = locate_template('archive-mobile-category.php');
         if ($new_template) {
             return $new_template;
         }
@@ -3323,15 +3330,15 @@ function ezoix_mobile_archive_templates($template) // MODIFIED to include laptop
             return $new_template;
         }
     }
-    
-    if (is_post_type_archive('laptop_device')) { 
+
+    if (is_post_type_archive('laptop_device')) {
         $new_template = locate_template('archive-laptop_device.php');
         if ($new_template) {
             return $new_template;
         }
     }
-    
-    if (is_singular('laptop_device')) { 
+
+    if (is_singular('laptop_device')) {
         $new_template = locate_template('single-laptop_device.php');
         if (!empty($new_template)) {
             return $new_template;
@@ -3524,7 +3531,8 @@ add_action('save_post_laptop_device', 'ezoix_set_focus_keyword_from_tags');
  * @param int $current_post_id The ID of the current post to exclude from the query.
  * @return string HTML output of the latest link or an empty string.
  */
-function ezoix_get_most_recent_link($current_post_id) {
+function ezoix_get_most_recent_link($current_post_id)
+{
     // Get the current post object to find its publication date
     $current_post = get_post($current_post_id);
 
@@ -3537,17 +3545,17 @@ function ezoix_get_most_recent_link($current_post_id) {
 
     // Query arguments to find the post immediately PRECEDING the current one in time
     $args = array(
-        'post_type'      => array('post', 'mobile_device', 'laptop_device'), 
+        'post_type'      => array('post', 'mobile_device', 'laptop_device'),
         'posts_per_page' => 1,
         'post_status'    => 'publish',
-        
+
         // Find the "newest" post that is still older than the current one
         'orderby'        => 'date',
-        'order'          => 'DESC', 
-        
+        'order'          => 'DESC',
+
         'post__not_in'   => array($current_post_id), // Exclude the current page
-        'no_found_rows'  => true, 
-        
+        'no_found_rows'  => true,
+
         'date_query'     => array(
             array(
                 'before'    => $current_post_date,
@@ -3564,7 +3572,7 @@ function ezoix_get_most_recent_link($current_post_id) {
         $recent_posts->the_post();
         $permalink = get_permalink();
         $title = get_the_title();
-        
+
         // Determine the type label for anchor text
         $post_type_obj = get_post_type_object(get_post_type());
         $post_type_label = $post_type_obj ? $post_type_obj->labels->singular_name : 'Article';
@@ -3574,9 +3582,35 @@ function ezoix_get_most_recent_link($current_post_id) {
         $output .= '<p>Read our previous ' . esc_html($post_type_label) . ': <br>';
         $output .= '<a href="' . esc_url($permalink) . '" rel="prev" class="cta-button">' . esc_html($title) . ' →</a></p>'; // Added rel="prev"
         $output .= '</section>';
-        
+
         wp_reset_postdata();
     }
 
     return $output;
 }
+/**
+ * Redirect old mobile-devices URLs to new /mobile/ structure
+ */
+function ezoix_redirect_old_mobile_urls()
+{
+    if (! is_404()) {
+        return;
+    }
+
+    global $wp;
+    $current_url = home_url($wp->request);
+
+    // Check if the URL starts with old slug
+    if (strpos($current_url, '/mobile-devices/') !== false) {
+        $new_url = str_replace('/mobile-devices/', '/mobile/', $current_url);
+
+        // Add trailing slash if needed (optional, match your permalink style)
+        if (substr($new_url, -1) !== '/') {
+            $new_url .= '/';
+        }
+
+        wp_redirect($new_url, 301);
+        exit;
+    }
+}
+add_action('template_redirect', 'ezoix_redirect_old_mobile_urls');

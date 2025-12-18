@@ -22,9 +22,18 @@ get_header(); ?>
                 </div>
 
                 <div class="category-posts-grid">
-                    <?php while (have_posts()) : the_post();
-                        ezoix_render_grid_card(); // Use the new unified card function
-                    ?>
+                    <?php $counter = 0; ?>
+                    <?php while (have_posts()) : the_post(); ?>
+                        <?php $counter++; ?>
+                        <?php ezoix_render_grid_card(); ?>
+                        <?php if ($counter % 5 === 0) : ?>
+                            <div class="video-interstitial">
+                                <div class="youtube-facade" data-video-id="xB4SsILjJig">
+                                    <img src="https://img.youtube.com/vi/xB4SsILjJig/maxresdefault.jpg" alt="Video thumbnail" loading="lazy">
+                                    <div class="play-button">▶</div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                     <?php endwhile; ?>
                 </div>
 

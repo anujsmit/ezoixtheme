@@ -53,56 +53,67 @@ get_header(); ?>
                 <?php if (have_posts()) : ?>
                     
                     <div class="grid-container">
-                        <?php while (have_posts()) : the_post(); 
+                        <?php $counter = 0; ?>
+                        <?php while (have_posts()) : the_post(); ?>
+                            <?php $counter++; ?>
+                            <?php
                             $device_price = get_field('device_price');
                             $device_status = get_field('device_status');
                             $device_rating = get_field('device_rating');
                             $specifications = get_field('specifications');
                             $author_name = get_the_author();
-                        ?>
-                        <article class="mobile-device-card">
-                            <div class="device-image">
-                                <a href="<?php the_permalink(); ?>">
-                                    <div class="thumbnail-aspect-ratio-box">
-                                        <?php if (has_post_thumbnail()) : ?>
-                                            <?php the_post_thumbnail('grid-portrait', array('loading' => 'lazy', 'class' => 'category-post-thumbnail')); ?>
-                                        <?php else : ?>
-                                            <div class="placeholder-content">
-                                                <span class="placeholder-icon dashicons dashicons-smartphone"></span>
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
-                                </a>
-                                
-                                <?php if ($device_status) : ?>
-                                    <span class="device-status status-<?php echo esc_attr($device_status); ?>">
-                                        <?php echo ucfirst($device_status); ?>
-                                    </span>
-                                <?php endif; ?>
-                            </div>
-                            
-                            <div class="device-content">
-                                <h2 class="device-title">
-                                    <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
-                                </h2>
-                                
-                                <div class="item-meta-yt">
-                                    <p class="author-name"><?php echo esc_html($author_name); ?></p>
-
-                                    <p class="post-date">
-                                    <?php if ($device_price) : ?>
-                                        <span class="price-value"><?php echo esc_html($device_price); ?></span>
+                            ?>
+                            <article class="mobile-device-card">
+                                <div class="device-image">
+                                    <a href="<?php the_permalink(); ?>">
+                                        <div class="thumbnail-aspect-ratio-box">
+                                            <?php if (has_post_thumbnail()) : ?>
+                                                <?php the_post_thumbnail('grid-portrait', array('loading' => 'lazy', 'class' => 'category-post-thumbnail')); ?>
+                                            <?php else : ?>
+                                                <div class="placeholder-content">
+                                                    <span class="placeholder-icon dashicons dashicons-smartphone"></span>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </a>
+                                    
+                                    <?php if ($device_status) : ?>
+                                        <span class="device-status status-<?php echo esc_attr($device_status); ?>">
+                                            <?php echo ucfirst($device_status); ?>
+                                        </span>
                                     <?php endif; ?>
-                                    <?php if ($device_rating) : 
-                                        $rating = floatval($device_rating) / 2;
-                                        if ($device_price) echo ' &bull; ';
-                                    ?>
-                                        <span class="rating-value">⭐ <?php echo number_format($rating, 1); ?>/5</span>
-                                    <?php endif; ?>
-                                    </p>
                                 </div>
-                            </div> <!-- Closing div added -->
-                        </article>
+                                
+                                <div class="device-content">
+                                    <h2 class="device-title">
+                                        <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+                                    </h2>
+                                    
+                                    <div class="item-meta-yt">
+                                        <p class="author-name"><?php echo esc_html($author_name); ?></p>
+
+                                        <p class="post-date">
+                                        <?php if ($device_price) : ?>
+                                            <span class="price-value"><?php echo esc_html($device_price); ?></span>
+                                        <?php endif; ?>
+                                        <?php if ($device_rating) : 
+                                            $rating = floatval($device_rating) / 2;
+                                            if ($device_price) echo ' &bull; ';
+                                        ?>
+                                            <span class="rating-value">⭐ <?php echo number_format($rating, 1); ?>/5</span>
+                                        <?php endif; ?>
+                                        </p>
+                                    </div>
+                                </div> <!-- Closing div added -->
+                            </article>
+                            <?php if ($counter % 5 === 0) : ?>
+                                <div class="video-interstitial">
+                                    <div class="youtube-facade" data-video-id="PKshhTHyoZU">
+                                        <img src="https://img.youtube.com/vi/PKshhTHyoZU/maxresdefault.jpg" alt="Video thumbnail" loading="lazy">
+                                        <div class="play-button">▶</div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                         <?php endwhile; ?>
                     </div>
                     

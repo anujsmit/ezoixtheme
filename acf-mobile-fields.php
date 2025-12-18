@@ -35,18 +35,18 @@ if (function_exists('acf_add_local_field_group')):
             array(
                 'key' => 'field_seo_meta_description',
                 'label' => 'SEO Meta Description',
-                'name' => 'seo_meta_description', 
+                'name' => 'seo_meta_description',
                 'type' => 'textarea',
                 'rows' => 2,
                 'new_lines' => '',
                 'instructions' => 'Automatically generated from JSON or specs.',
             ),
-            
+
             // --- TEXT FIELDS FOR JSON CONTENT SECTIONS (RETAINED) ---
             array(
                 'key' => 'field_review_introduction',
                 'label' => 'Review - Introduction',
-                'name' => 'review_introduction', 
+                'name' => 'review_introduction',
                 'type' => 'textarea',
                 'rows' => 4,
                 'instructions' => 'The introductory text/overview from the JSON file.',
@@ -54,7 +54,7 @@ if (function_exists('acf_add_local_field_group')):
             array(
                 'key' => 'field_review_display',
                 'label' => 'Review - Display Experience',
-                'name' => 'review_display', 
+                'name' => 'review_display',
                 'type' => 'textarea',
                 'rows' => 4,
                 'instructions' => 'Content section on display from the JSON file.',
@@ -62,7 +62,7 @@ if (function_exists('acf_add_local_field_group')):
             array(
                 'key' => 'field_review_performance',
                 'label' => 'Review - Performance & Gaming',
-                'name' => 'review_performance', 
+                'name' => 'review_performance',
                 'type' => 'textarea',
                 'rows' => 4,
                 'instructions' => 'Content section on performance from the JSON file.',
@@ -70,7 +70,7 @@ if (function_exists('acf_add_local_field_group')):
             array(
                 'key' => 'field_review_camera',
                 'label' => 'Review - Camera Performance',
-                'name' => 'review_camera', 
+                'name' => 'review_camera',
                 'type' => 'textarea',
                 'rows' => 4,
                 'instructions' => 'Content section on camera from the JSON file.',
@@ -78,7 +78,7 @@ if (function_exists('acf_add_local_field_group')):
             array(
                 'key' => 'field_review_battery',
                 'label' => 'Review - Battery & Charging',
-                'name' => 'review_battery', 
+                'name' => 'review_battery',
                 'type' => 'textarea',
                 'rows' => 4,
                 'instructions' => 'Content section on battery from the JSON file.',
@@ -86,52 +86,52 @@ if (function_exists('acf_add_local_field_group')):
             array(
                 'key' => 'field_review_verdict',
                 'label' => 'Review - Final Verdict',
-                'name' => 'review_verdict', 
+                'name' => 'review_verdict',
                 'type' => 'textarea',
                 'rows' => 4,
                 'instructions' => 'The final verdict/summary from the JSON file.',
             ),
-            
+
             // --- IMAGE URL FIELDS FROM JSON IMPORT (RETAINED) ---
             array(
                 'key' => 'field_review_introduction_image',
                 'label' => 'Image - Introduction (URL)',
-                'name' => 'review_introduction_image', 
+                'name' => 'review_introduction_image',
                 'type' => 'url',
                 'instructions' => 'Image URL for the introduction section.',
             ),
             array(
                 'key' => 'field_review_display_image',
                 'label' => 'Image - Display (URL)',
-                'name' => 'review_display_image', 
+                'name' => 'review_display_image',
                 'type' => 'url',
                 'instructions' => 'Image URL for the display section.',
             ),
             array(
                 'key' => 'field_review_performance_image',
                 'label' => 'Image - Performance (URL)',
-                'name' => 'review_performance_image', 
+                'name' => 'review_performance_image',
                 'type' => 'url',
                 'instructions' => 'Image URL for the performance section.',
             ),
             array(
                 'key' => 'field_review_camera_image',
                 'label' => 'Image - Camera (URL)',
-                'name' => 'review_camera_image', 
+                'name' => 'review_camera_image',
                 'type' => 'url',
                 'instructions' => 'Image URL for the camera section.',
             ),
             array(
                 'key' => 'field_review_battery_image',
                 'label' => 'Image - Battery (URL)',
-                'name' => 'review_battery_image', 
+                'name' => 'review_battery_image',
                 'type' => 'url',
                 'instructions' => 'Image URL for the battery section.',
             ),
             array(
                 'key' => 'field_review_verdict_image',
                 'label' => 'Image - Final Verdict (URL)',
-                'name' => 'review_verdict_image', 
+                'name' => 'review_verdict_image',
                 'type' => 'url',
                 'instructions' => 'Image URL for the final verdict section.',
             ),
@@ -224,7 +224,13 @@ if (function_exists('acf_add_local_field_group')):
                     ),
                 ),
             ),
-            
+            array(
+                'key' => 'field_youtube_video',
+                'label' => 'YouTube Review/Show',
+                'name' => 'youtube_video',
+                'type' => 'oembed',
+                'instructions' => 'Paste the YouTube video URL here (e.g., https://www.youtube.com/watch?v=...)',
+            ),
             // --- FIX: REPLACING GALLERY (PRO) WITH MULTIPLE IMAGE FIELDS (FREE) ---
             array(
                 'key' => 'field_device_image_1',
@@ -309,7 +315,7 @@ if (function_exists('acf_add_local_field_group')):
                     'value' => 'mobile_device',
                 ),
             ),
-            array( 
+            array(
                 array(
                     'param' => 'post_type',
                     'operator' => '==',
