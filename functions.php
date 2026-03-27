@@ -8,9 +8,196 @@
 if (! defined('ABSPATH')) {
 }
 
+
+
+// =============================================
+// CUSTOM ADS MANAGER
+// =============================================
+
+// 1. Register Admin Menu Page
+function ezoix_ads_manager_menu()
+{
+    add_menu_page(
+        'Ads Manager',
+        'Ads Manager',
+        'manage_options',
+        'ezoix-ads-manager',
+        'ezoix_ads_manager_page',
+        'dashicons-megaphone',
+        60
+    );
+}
+add_action('admin_menu', 'ezoix_ads_manager_menu');
+
+
+// 2. Enqueue Media Uploader on our page only
+function ezoix_ads_manager_enqueue($hook)
+{
+    if ($hook !== 'toplevel_page_ezoix-ads-manager') return;
+    wp_enqueue_media();
+    wp_enqueue_script('ezoix-ads-media', get_template_directory_uri() . '/js/ads-media.js', array('jquery'), '1.0', true);
+}
+add_action('admin_enqueue_scripts', 'ezoix_ads_manager_enqueue');
+
+
+// 3. Save Settings
+function ezoix_ads_manager_save()
+{
+    if (
+        isset($_POST['ezoix_ads_nonce']) &&
+        wp_verify_nonce($_POST['ezoix_ads_nonce'], 'ezoix_save_ads') &&
+        current_user_can('manage_options')
+    ) {
+        update_option('ezoix_banner_image_url', esc_url_raw($_POST['ezoix_banner_image_url']));
+        update_option('ezoix_banner_link_url', esc_url_raw($_POST['ezoix_banner_link_url']));
+        update_option('ezoix_banner_alt_text', sanitize_text_field($_POST['ezoix_banner_alt_text']));
+        update_option('ezoix_banner_enabled', isset($_POST['ezoix_banner_enabled']) ? '1' : '0');
+    }
+}
+add_action('admin_init', 'ezoix_ads_manager_save');
+
+
+// 4. Render the Admin Page
+function ezoix_ads_manager_page()
+{
+    $image_url   = get_option('ezoix_banner_image_url', '');
+    $link_url    = get_option('ezoix_banner_link_url', '');
+    $alt_text    = get_option('ezoix_banner_alt_text', '');
+    $enabled     = get_option('ezoix_banner_enabled', '1');
+?>
+    <div class="wrap">
+        <h1>🎯 Ads Manager</h1>
+
+        <?php if (isset($_POST['ezoix_ads_nonce'])) : ?>
+            <div class="notice notice-success is-dismissible">
+                <p>✅ Ad settings saved!</p>
+            </div>
+        <?php endif; ?>
+
+        <form method="post" action="">
+            <?php wp_nonce_field('ezoix_save_ads', 'ezoix_ads_nonce'); ?>
+
+            <table class="form-table">
+                <tr>
+                    <th><label>Enable Banner</label></th>
+                    <td>
+                        <input type="checkbox" name="ezoix_banner_enabled" value="1" <?php checked($enabled, '1'); ?> />
+                        <span>Show banner on the site</span>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th><label>Banner Image</label></th>
+                    <td>
+                        <input
+                            type="text"
+                            id="ezoix_banner_image_url"
+                            name="ezoix_banner_image_url"
+                            value="<?php echo esc_attr($image_url); ?>"
+                            class="regular-text"
+                            placeholder="https://..." />
+                        <button type="button" class="button" id="ezoix_upload_banner_btn">
+                            📁 Choose Image
+                        </button>
+
+                        <div style="margin-top:10px;">
+                            <?php if ($image_url) : ?>
+                                <img id="ezoix_banner_preview" src="<?php echo esc_url($image_url); ?>" style="max-width:400px; border:1px solid #ddd; border-radius:4px;" />
+                            <?php else : ?>
+                                <img id="ezoix_banner_preview" src="" style="max-width:400px; display:none; border:1px solid #ddd; border-radius:4px;" />
+                            <?php endif; ?>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th><label>Banner Link URL</label></th>
+                    <td>
+                        <input
+                            type="text"
+                            name="ezoix_banner_link_url"
+                            value="<?php echo esc_attr($link_url); ?>"
+                            class="regular-text"
+                            placeholder="https://yoursite.com/landing-page" />
+                        <p class="description">Where should the banner link to when clicked?</p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th><label>Alt Text</label></th>
+                    <td>
+                        <input
+                            type="text"
+                            name="ezoix_banner_alt_text"
+                            value="<?php echo esc_attr($alt_text); ?>"
+                            class="regular-text"
+                            placeholder="Advertisement" />
+                        <p class="description">Describe the image for accessibility & SEO.</p>
+                    </td>
+                </tr>
+            </table>
+
+            <?php submit_button('Save Ad Settings'); ?>
+        </form>
+    </div>
+    <?php
+}
+
+
+function ezoix_render_custom_banner()
+{
+    if (get_option('ezoix_banner_enabled', '1') !== '1') {
+        // Banner disabled — show placeholder only to admins
+        if (current_user_can('manage_options')) {
+            echo '<section class="helloworld ad-placeholder">
+                <a href="' . esc_url(admin_url('admin.php?page=ezoix-ads-manager')) . '">
+                    <div class="ad-placeholder-inner">
+                        <span class="ad-placeholder-icon">📢</span>
+                        <span class="ad-placeholder-text">Place Your Ad Here</span>
+                        <span class="ad-placeholder-sub">Contact us to place your ads</span>
+                    </div>
+                </a>
+            </section>';
+        }
+        return;
+    }
+
+    $image_url = get_option('ezoix_banner_image_url', '');
+    $link_url  = get_option('ezoix_banner_link_url', '');
+    $alt_text  = get_option('ezoix_banner_alt_text', 'Advertisement');
+
+    if (empty($image_url)) {
+        // No image set — show placeholder to everyone
+        echo '<section class="helloworld ad-placeholder">
+    <div class="ad-placeholder-inner">
+        <span class="ad-placeholder-icon">📢</span>
+        <span class="ad-placeholder-text">Place Your Ad Here</span>
+        ' . (current_user_can('manage_options')
+            ? '<a href="' . esc_url(admin_url('admin.php?page=ezoix-ads-manager')) . '" class="ad-placeholder-btn">Set Up Ad →</a>'
+            : '<a href="https://www.ezoix.com/contact" class="ad-placeholder-btn" target="_blank" rel="noopener">Contact now→</a>') . '
+    </div>
+</section>';
+        return;
+    }
+
+    // Normal banner output
+    echo '<section class="helloworld">';
+    if (!empty($link_url)) {
+        echo '<a href="' . esc_url($link_url) . '" target="_blank" rel="noopener sponsored">';
+    }
+    echo '<img src="' . esc_url($image_url) . '" alt="' . esc_attr($alt_text) . '" style="max-width:100%; height:auto; display:block; margin:0 auto;">';
+    if (!empty($link_url)) {
+        echo '</a>';
+    }
+    echo '</section>';
+}
 /**
  * Theme Setup
  */
+
+
+
+
 function ezoix_theme_setup()
 {
     add_theme_support('title-tag');
@@ -447,7 +634,7 @@ class Ezoix_Categories_Widget extends WP_Widget
     public function form($instance)
     {
         $title = ! empty($instance['title']) ? $instance['title'] : __('Categories', 'ezoix');
-?>
+    ?>
         <p>
             <label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:', 'ezoix'); ?></label>
             <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo esc_attr($title); ?>">

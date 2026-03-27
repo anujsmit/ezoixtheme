@@ -14,7 +14,7 @@
     <a class="skip-link screen-reader-text" href="#main-content">
         <?php esc_html_e('Skip to content', 'ezoix'); ?>
     </a>
-    
+
     <header class="site-header">
         <div class="container">
             <div class="header-inner">
@@ -39,30 +39,33 @@
             </div>
         </div>
     </header>
+    <section class="helloworld">
+        <?php ezoix_render_custom_banner(); ?>
+    </section>
 
     <?php if (is_front_page()) : ?>
-    <section class="hero-section">
-        <div class="container">
-            <div class="hero-content">
-                <h1 class="hero-title"><?php bloginfo('name'); ?></h1>
-                <p class="hero-subtitle"><?php bloginfo('description'); ?></p>
-                
-                <div class="trending-topics">
-                    <?php
-                    $categories = get_categories(array(
-                        'orderby' => 'count',
-                        'order' => 'DESC',
-                        'number' => 5,
-                    ));
-                    
-                    foreach ($categories as $category) {
-                        echo '<a href="' . get_category_link($category->term_id) . '" class="trending-topic">' . esc_html($category->name) . '</a>';
-                    }
-                    ?>
+        <section class="hero-section">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="hero-title"><?php bloginfo('name'); ?></h1>
+                    <p class="hero-subtitle"><?php bloginfo('description'); ?></p>
+
+                    <div class="trending-topics">
+                        <?php
+                        $categories = get_categories(array(
+                            'orderby' => 'count',
+                            'order' => 'DESC',
+                            'number' => 5,
+                        ));
+
+                        foreach ($categories as $category) {
+                            echo '<a href="' . get_category_link($category->term_id) . '" class="trending-topic">' . esc_html($category->name) . '</a>';
+                        }
+                        ?>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
     <?php endif; ?>
 
     <main id="main-content" class="site-main">
